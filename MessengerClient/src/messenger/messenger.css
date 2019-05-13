@@ -1,0 +1,84 @@
+* {
+    color-light-green: #5CDB95;
+    color-dark-green: #379683;
+    color-blue: #05386B;
+    color-white: #ecf2f6;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: color-white;
+}
+.messenger-window {
+    -fx-background-color: color-white;
+}
+.user-pane {
+    -fx-background-color: color-white;
+    -fx-border-color: transparent color-blue transparent transparent;
+}
+.chats-list {
+    -fx-background-color: color-white;
+    -fx-border-width: 1 1 0 0;
+    -fx-border-color: color-blue color-blue transparent transparent;
+    -fx-text-fill: color-blue;
+    -fx-padding: 0;
+}
+.chats-list .list-cell {
+    -fx-background-color: color-white;
+    -fx-font-size: 14px;
+    -fx-padding: 15px;
+    -fx-cursor: hand;
+}
+.chats-list .list-cell:hover {
+    -fx-background-color: color-blue;
+    -fx-text-fill: color-white;
+}
+.chats-list .list-cell:empty {
+    visibility: hidden;
+}
+.chat-box {
+    -fx-background-color: color-white;
+    -fx-padding: 15px;
+}
+.chat-box .msg-box {
+    -fx-background-color: color-blue;
+    -fx-background-radius: 10px;
+}
+
+.img-message-pane {
+    -fx-background-color: color-blue;
+    -fx-background-radius: 5px;
+    -fx-padding: 5px;
+}
+.msg-box {
+    -fx-padding: 5px;
+}
+.msg-sender, .msg-text, .msg-time {
+    -fx-text-fill: color-white;
+}
+.msg-sender {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+.msg-text {
+    -fx-font-size: 15px;
+}
+.msg-time {
+    -fx-font-size: 10px;
+    -fx-alignment: TOP_RIGHT;
+}
+
+#chooseImageBtn {
+    -fx-cursor: hand;
+    -fx-opacity: 0.6;
+    -fx-background-color: color-white;
+}
+#chooseImageBtn:hover {
+    -fx-opacity: 1;
+}
+
+.notification-lbl {
+    -fx-background-color: grey;
+    -fx-background-radius: 10px;
+    -fx-text-fill: color-blue;
+    -fx-padding: 5px 10px;
+}

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane id="AnchorPane" fx:id="authWindow" maxHeight="450.0" maxWidth="650.0" minHeight="450.0" minWidth="650.0" prefHeight="450.0" prefWidth="650.0" styleClass="form" stylesheets="@auth.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="auth.AuthController">
+   <children>
+      <Label layoutX="174.0" layoutY="40.0" styleClass="hello-title" text="Start Messaging Now" textFill="#525fd5">
+         <font>
+            <Font name="Segoe UI Bold" size="30.0" />
+         </font>
+      </Label>
+      <Accordion fx:id="accordion" focusTraversable="false" layoutX="100.0" layoutY="100.0" prefWidth="450.0">
+        <panes>
+          <TitledPane fx:id="signUpPane" alignment="CENTER" contentDisplay="CENTER" expanded="false" focusTraversable="false" styleClass="sign-up-tpane" text="Sign Up" textAlignment="CENTER">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="220.0" prefWidth="200.0">
+                     <children>
+                        <TextField fx:id="signUpNameField" layoutX="134.0" layoutY="10.0" prefHeight="30.0" prefWidth="180.0" promptText="Name" />
+                        <TextField fx:id="signUpEmailField" layoutX="134.0" layoutY="50.0" prefHeight="30.0" prefWidth="180.0" promptText="Email" />
+                        <PasswordField fx:id="signUpPasswordField" layoutX="134.0" layoutY="90.0" prefHeight="30.0" prefWidth="180.0" promptText="Password" />
+                        <PasswordField fx:id="signUpRePasswordField" layoutX="134.0" layoutY="130.0" prefHeight="30.0" prefWidth="180.0" promptText="Repeat Password" />
+                        <Button fx:id="signUpBtn" alignment="CENTER" layoutX="187.0" layoutY="169.0" mnemonicParsing="false" onAction="#onSignUp" styleClass="acc-btn" text="Sign Up" textAlignment="CENTER">
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </Button>
+                     </children>
+                  </AnchorPane>
+            </content>
+          </TitledPane>
+          <TitledPane fx:id="signInPane" alignment="CENTER" contentDisplay="CENTER" expanded="false" styleClass="sign-in-tpane" text="Sign In" textAlignment="CENTER">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="150.0" prefWidth="448.0">
+                     <children>
+                        <TextField fx:id="signInEmailField" layoutX="134.0" layoutY="10.0" prefHeight="30.0" prefWidth="180.0" promptText="Email" />
+                        <PasswordField fx:id="signInPasswordField" layoutX="134.0" layoutY="50.0" prefHeight="30.0" prefWidth="180.0" promptText="Password" />
+                        <Button fx:id="signInBtn" layoutX="189.0" layoutY="99.0" mnemonicParsing="false" onAction="#onSignIn" styleClass="acc-btn" text="Sign In">
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                           <opaqueInsets>
+                              <Insets />
+                           </opaqueInsets>
+                        </Button>
+                     </children>
+                  </AnchorPane>
+            </content>
+          </TitledPane>
+        </panes>
+      </Accordion>
+   </children>
+</AnchorPane>

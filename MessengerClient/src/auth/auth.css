@@ -1,0 +1,48 @@
+* {
+    color-light-green: #5CDB95;
+    color-dark-green: #379683;
+    color-blue: #05386B;
+    color-white: #ecf2f6;
+}
+
+.form {
+    -fx-background-color: color-white;
+}
+.hello-title {
+    -fx-text-fill: color-blue;
+}
+
+.accordion .titled-pane {
+    -fx-text-fill: white;
+}
+.accordion .titled-pane .title {
+    -fx-background-color: color-blue;
+    -fx-font-weight: bold;
+}
+.accordion .titled-pane .content {
+    -fx-border-color: color-blue;
+    -fx-background-color: color-white;
+}
+.sign-up-tpane .title {
+    -fx-background-radius: 10 10 0 0;
+}
+.sign-up-tpane:collapsed .title {
+    -fx-border-color: transparent transparent color-light-green transparent;
+    -fx-border-width: 2px;
+}
+.sign-in-tpane .title {
+    -fx-background-radius: 0 0 10 10;
+}
+.sign-in-tpane:expanded .title {
+    -fx-background-radius: 0;
+}
+.accordion .sign-in-tpane:expanded .content {
+    -fx-border-radius: 0 0 10 10;
+}
+.acc-btn {
+    -fx-background-color: color-blue;
+    -fx-cursor: hand;
+    -fx-text-fill: color-white;
+    -fx-padding: 10 15;
+    -fx-font-weight: bold;
+}
