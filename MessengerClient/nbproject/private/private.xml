@@ -3,10 +3,9 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Java/FX/Coursework/MessengerClient/src/auth/AuthController.java</file>
             <file>file:/C:/Java/FX/Coursework/MessengerClient/src/messenger/MessengerController.java</file>
-            <file>file:/C:/Java/FX/Coursework/MessengerClient/src/messages/Message.java</file>
-            <file>file:/C:/Java/FX/Coursework/MessengerClient/src/messenger/Listener.java</file>
+            <file>file:/C:/Java/FX/Coursework/MessengerClient/src/messenger/messenger.css</file>
+            <file>file:/C:/Java/FX/Coursework/MessengerClient/src/messenger/MessengerDoc.fxml</file>
         </group>
     </open-files>
 </project-private>

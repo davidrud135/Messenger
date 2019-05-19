@@ -30,6 +30,8 @@
 }
 .chats-list .list-cell:hover {
     -fx-background-color: color-blue;
+}
+.chats-list .list-cell:hover .label {
     -fx-text-fill: color-white;
 }
 .chats-list .list-cell:empty {

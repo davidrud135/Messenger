@@ -1,18 +1,15 @@
 package messenger;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
-import java.sql.Connection;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
@@ -28,9 +25,9 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import shared.DBConnector;
 import messages.Message;
 import messages.User;
+import shared.Communicator;
 
 /**
  *
@@ -38,7 +35,6 @@ import messages.User;
  */
 public class MessengerController implements Initializable {
   
-  private Connection conn = null;
   public static User userData;
   
   final private String HOST = "localhost";
@@ -65,7 +61,6 @@ public class MessengerController implements Initializable {
   
   @Override
   public void initialize(URL url, ResourceBundle rb) {
-    this.conn = DBConnector.connect();
     this.userNameLbl.setText(userData.toString());
     this.userEmailLbl.setText(userData.getEmail());
     this.setImageChooserBtn();
@@ -81,7 +76,7 @@ public class MessengerController implements Initializable {
     File selectedImage = fileChooser.showOpenDialog(this.chooseImageBtn.getScene().getWindow());
 
     if (selectedImage != null) {
-     Listener.sendImageMsg(selectedImage);
+      Communicator.sendImageMsg(selectedImage);
     }
   }
   
@@ -91,15 +86,20 @@ public class MessengerController implements Initializable {
       String msgText = this.messageField.getText().trim();
       if (msgText.isEmpty()) return;
       String encryptedMsgText = Coder.encrypt(msgText);
-      Listener.sendTextMsg(encryptedMsgText);
+      Communicator.sendTextMsg(encryptedMsgText);
       this.messageField.clear();
     }
   }
   
   public void setUserList(Message msg) {
     Platform.runLater(() -> {
-      ObservableList<User> usersObsList = FXCollections.observableList(msg.getUsers());
-      usersListView.setItems(usersObsList);
+      this.usersListView.getItems().clear();
+      for (User user : msg.getUsers()) {
+        if (user.getId() == userData.getId()) continue;
+        String userNameAndEmail = String.format("%s (%s)", user.toString(), user.getEmail());
+        Label userNameAndEmailLbl = new  Label(userNameAndEmail);
+        this.usersListView.getItems().add(userNameAndEmailLbl);
+      }
     });
   }
   

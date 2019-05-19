@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane id="AnchorPane" fx:id="authWindow" maxHeight="450.0" maxWidth="650.0" minHeight="450.0" minWidth="650.0" prefHeight="450.0" prefWidth="650.0" styleClass="form" stylesheets="@auth.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="auth.AuthController">
+<AnchorPane id="AnchorPane" fx:id="authWindow" maxHeight="450.0" maxWidth="650.0" minHeight="450.0" minWidth="650.0" prefHeight="450.0" prefWidth="650.0" styleClass="form" stylesheets="@auth.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="auth.gui.AuthController">
    <children>
       <Label layoutX="174.0" layoutY="40.0" styleClass="hello-title" text="Start Messaging Now" textFill="#525fd5">
          <font>
@@ -30,7 +30,6 @@
                         <PasswordField fx:id="signUpRePasswordField" layoutX="134.0" layoutY="130.0" prefHeight="30.0" prefWidth="180.0" promptText="Repeat Password" />
                         <Button fx:id="signUpBtn" alignment="CENTER" layoutX="187.0" layoutY="169.0" mnemonicParsing="false" onAction="#onSignUp" styleClass="acc-btn" text="Sign Up" textAlignment="CENTER">
                            <cursor>
-                              <Cursor fx:constant="HAND" />
                            </cursor>
                         </Button>
                      </children>
@@ -45,7 +44,6 @@
                         <PasswordField fx:id="signInPasswordField" layoutX="134.0" layoutY="50.0" prefHeight="30.0" prefWidth="180.0" promptText="Password" />
                         <Button fx:id="signInBtn" layoutX="189.0" layoutY="99.0" mnemonicParsing="false" onAction="#onSignIn" styleClass="acc-btn" text="Sign In">
                            <cursor>
-                              <Cursor fx:constant="HAND" />
                            </cursor>
                            <opaqueInsets>
                               <Insets />
