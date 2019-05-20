@@ -1,21 +1,22 @@
 package messenger;
 
 import java.io.File;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
-import java.net.Socket;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -37,12 +38,7 @@ public class MessengerController implements Initializable {
   
   public static User userData;
   
-  final private String HOST = "localhost";
-  final private int PORT  = 12345;
-  private Thread readThread;
-  ObjectOutputStream outputStream;
-  ObjectInputStream inputStream;
-  Socket server;
+  private ArrayList<User> usersList;
           
   @FXML
   private Label userNameLbl;
@@ -59,12 +55,46 @@ public class MessengerController implements Initializable {
   @FXML
   private Button chooseImageBtn;        
   
+  EventHandler<ActionEvent> addUserEmailToField = new EventHandler<ActionEvent>() {
+    public void handle(ActionEvent ev) {
+      MenuItem item = (MenuItem) ev.getSource();
+      String userEmail = item.getId();
+      messageField.setText(
+        String.format("%s: ", userEmail)
+      );
+      messageField.requestFocus();
+      messageField.selectPositionCaret(userEmail.length() + 2);
+    }
+  };
+  
   @Override
   public void initialize(URL url, ResourceBundle rb) {
     this.userNameLbl.setText(userData.toString());
     this.userEmailLbl.setText(userData.getEmail());
     this.setImageChooserBtn();
     this.chatBox.heightProperty().addListener(observable -> this.chatScrollPane.setVvalue(1D));
+  }
+  
+  @FXML
+  private void onMessageSend(KeyEvent ev) {
+    if (ev.getCode() == KeyCode.ENTER) {
+      String msgText = this.messageField.getText().trim();
+      if (msgText.isEmpty()) return;
+      if (isMessagePrivate(msgText)) {
+        String receiverEmail = msgText.substring(0, msgText.indexOf(":"));
+        User receiverUser = null;
+        for (User user : usersList) {
+          if (user.getEmail().equals(receiverEmail)) {
+            receiverUser = user;
+            break;
+          }
+        }
+        Communicator.sendPrivateTextMsg(msgText, receiverUser);
+      } else {
+        Communicator.sendTextMsg(msgText);      
+      }
+      this.messageField.clear();
+    }
   }
   
   public void openImageChooser() {
@@ -80,25 +110,34 @@ public class MessengerController implements Initializable {
     }
   }
   
-  @FXML
-  private void onMessageSend(KeyEvent ev) {
-    if (ev.getCode() == KeyCode.ENTER) {
-      String msgText = this.messageField.getText().trim();
-      if (msgText.isEmpty()) return;
-      String encryptedMsgText = Coder.encrypt(msgText);
-      Communicator.sendTextMsg(encryptedMsgText);
-      this.messageField.clear();
-    }
-  }
   
   public void setUserList(Message msg) {
     Platform.runLater(() -> {
       this.usersListView.getItems().clear();
-      for (User user : msg.getUsers()) {
+      usersList = msg.getUsers();
+      for (User user : usersList) {
         if (user.getId() == userData.getId()) continue;
-        String userNameAndEmail = String.format("%s (%s)", user.toString(), user.getEmail());
-        Label userNameAndEmailLbl = new  Label(userNameAndEmail);
-        this.usersListView.getItems().add(userNameAndEmailLbl);
+        Label userNameLbl = new Label(user.toString());
+        userNameLbl.setPrefWidth(220);
+        
+        Image menuIcon = new Image(getClass().getResourceAsStream("/images/menu-vertical-icon.png"));
+        ImageView menuIconView = new ImageView(menuIcon);
+        menuIconView.setFitHeight(15);
+        menuIconView.setFitWidth(15);
+        
+        MenuButton kebabMenuBtn = new MenuButton();
+        MenuItem privateMsgItem = new MenuItem("Private message");
+        privateMsgItem.setId(user.getEmail());
+        privateMsgItem.setOnAction(addUserEmailToField);
+        kebabMenuBtn.getItems().add(privateMsgItem);
+        kebabMenuBtn.setGraphic(menuIconView);
+        kebabMenuBtn.setPrefSize(15, 15);
+        kebabMenuBtn.getStyleClass().add("kebab-menu");
+        
+        HBox userHBox = new HBox(userNameLbl, kebabMenuBtn);
+        userHBox.setSpacing(10);
+        userHBox.setAlignment(Pos.CENTER_LEFT);
+        this.usersListView.getItems().add(userHBox);
       }
     });
   }
@@ -176,7 +215,7 @@ public class MessengerController implements Initializable {
       HBox hMsgBox = new HBox();
       hMsgBox.prefWidthProperty().bind(this.chatBox.widthProperty());
       VBox messageBox = new VBox(msgSenderLbl, msgTextLbl, msgTimeLbl);
-      messageBox.getStyleClass().add("msg-box");
+      messageBox.getStyleClass().add("public-msg-box");
       messageBox.setMinWidth(100);
       messageBox.setMaxWidth(500);
       msgTimeLbl.prefWidthProperty().bind(messageBox.widthProperty());
@@ -186,6 +225,40 @@ public class MessengerController implements Initializable {
       }
       this.chatBox.getChildren().add(hMsgBox);
     });
+  }
+  
+  public void addPrivateMessageToChat(Message msg) {
+    System.out.println("Add private msg to chat");
+    Platform.runLater(() -> {
+      String msgSenderName = msg.getSender().toString();
+      String msgText = Coder.decrypt(msg.getText());
+      String msgDateTime = msg.getDateTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+      Label msgSenderLbl = new Label("Private message from " + msgSenderName);
+      Label msgTextLbl = new Label(msgText);
+      Label msgTimeLbl = new Label(msgDateTime);
+      msgSenderLbl.getStyleClass().add("msg-sender");
+      msgTextLbl.getStyleClass().add("msg-text");
+      msgTimeLbl.getStyleClass().add("msg-time");
+      msgTextLbl.setWrapText(true);
+      HBox hMsgBox = new HBox();
+      hMsgBox.prefWidthProperty().bind(this.chatBox.widthProperty());
+      VBox messageBox = new VBox(msgSenderLbl, msgTextLbl, msgTimeLbl);
+      messageBox.getStyleClass().add("private-msg-box");
+      messageBox.setMinWidth(100);
+      messageBox.setMaxWidth(500);
+      msgTimeLbl.prefWidthProperty().bind(messageBox.widthProperty());
+      hMsgBox.getChildren().add(messageBox);
+      if (msg.getSender().getId() == userData.getId()) {
+        hMsgBox.setAlignment(Pos.CENTER_RIGHT);
+        msgSenderLbl.setText("Private message to " + msg.getReceiver());
+      }
+      this.chatBox.getChildren().add(hMsgBox);
+    });
+  }
+  
+  public boolean isMessagePrivate(String text) {
+    System.out.println(text);
+    return text.matches("^[A-Za-z0-9+_.-]+@(.+): .+$");
   }
   
 }

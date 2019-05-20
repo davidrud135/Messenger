@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import messages.Message;
 import messages.MessageType;
 import messages.User;
+import messenger.Coder;
 import messenger.MessengerController;
 
 /**
@@ -43,7 +44,6 @@ public class Communicator implements Runnable {
   @Override
   public void run() {
     try {
-//      connect();
       System.out.println("Sockets in and out ready!");
       while (socket.isConnected()) {
         Object inputObj = objInStream.readObject();
@@ -93,12 +93,14 @@ public class Communicator implements Runnable {
       )
     );
     switch (msg.getType()) {
-      case USER_TEXT:
+      case USER_PUBLIC_TEXT:
         messengerController.addMessageToChat(msg);
         break;
-      case USER_IMAGE:
+      case USER_PUBLIC_IMAGE:
         messengerController.addImageToChat(msg);
         break;
+      case USER_PRIVATE_TEXT:
+        messengerController.addPrivateMessageToChat(msg);
       case SERVER:
 //        messengerController.addAsServer(msg);
         break;
@@ -120,6 +122,22 @@ public class Communicator implements Runnable {
     Communicator.messengerController = messengerController;
   }
   
+  public static void sendPrivateTextMsg(String msgText, User receiver) {
+    String text = msgText.substring(msgText.indexOf(" ") + 1);
+    try {
+      Message msg = new Message();
+      msg.setSender(userData);
+      msg.setReceiver(receiver);
+      msg.setType(MessageType.USER_PRIVATE_TEXT);
+      msg.setText(Coder.encrypt(text));
+      msg.setDateTime(LocalDateTime.now());
+      objOutStream.writeObject(msg);
+      objOutStream.flush();
+    } catch (IOException ex) {
+      ex.printStackTrace();
+    }
+  }
+  
   /* This method is used for sending text Message
    * @param msg - The message text
    */
@@ -127,8 +145,8 @@ public class Communicator implements Runnable {
     try {
       Message msg = new Message();
       msg.setSender(userData);
-      msg.setType(MessageType.USER_TEXT);
-      msg.setText(msgText);
+      msg.setType(MessageType.USER_PUBLIC_TEXT);
+      msg.setText(Coder.encrypt(msgText));
       msg.setDateTime(LocalDateTime.now());
       objOutStream.writeObject(msg);
       objOutStream.flush();
@@ -144,7 +162,7 @@ public class Communicator implements Runnable {
     try {
       Message msg = new Message();
       msg.setSender(userData);
-      msg.setType(MessageType.USER_IMAGE);
+      msg.setType(MessageType.USER_PUBLIC_IMAGE);
       msg.setDateTime(LocalDateTime.now());
       msg.setImage(msgImage);
       objOutStream.writeObject(msg);

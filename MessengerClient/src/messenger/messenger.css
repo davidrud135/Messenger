@@ -1,8 +1,10 @@
 * {
     color-light-green: #5CDB95;
     color-dark-green: #379683;
+    color-light-blue: #c5d2e8;
     color-blue: #05386B;
     color-white: #ecf2f6;
+    color-grey: #dfe3e6;
 }
 
 .scroll-pane .viewport {
@@ -26,33 +28,36 @@
     -fx-background-color: color-white;
     -fx-font-size: 14px;
     -fx-padding: 15px;
-    -fx-cursor: hand;
 }
 .chats-list .list-cell:hover {
-    -fx-background-color: color-blue;
-}
-.chats-list .list-cell:hover .label {
-    -fx-text-fill: color-white;
+    -fx-background-color: color-light-blue;
 }
 .chats-list .list-cell:empty {
     visibility: hidden;
 }
+
 .chat-box {
     -fx-background-color: color-white;
     -fx-padding: 15px;
 }
-.chat-box .msg-box {
-    -fx-background-color: color-blue;
-    -fx-background-radius: 10px;
-}
 
+.public-msg-box, .private-msg-box {
+    -fx-background-radius: 10px;
+    -fx-padding: 5px;
+}
+.private-msg-box {
+    -fx-background-color: green;
+}
+.public-msg-box {
+    -fx-background-color: color-blue;
+}
 .img-message-pane {
     -fx-background-color: color-blue;
     -fx-background-radius: 5px;
     -fx-padding: 5px;
 }
-.msg-box {
-    -fx-padding: 5px;
+.public-msg-box {
+    
 }
 .msg-sender, .msg-text, .msg-time {
     -fx-text-fill: color-white;
@@ -79,8 +84,24 @@
 }
 
 .notification-lbl {
-    -fx-background-color: grey;
+    -fx-border-color: color-blue;
     -fx-background-radius: 10px;
     -fx-text-fill: color-blue;
     -fx-padding: 5px 10px;
+}
+
+.kebab-menu > .arrow-button {
+    -fx-padding: 0;
+}
+
+.kebab-menu > .arrow-button > .arrow {
+    -fx-padding: 0;
+}
+.kebab-menu {
+    -fx-background-color: transparent;
+    -fx-background-radius: 10px;
+    -fx-cursor: hand;
+}
+.kebab-menu:hover {
+    -fx-background-color: color-grey;
 }

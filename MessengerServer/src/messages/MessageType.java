@@ -3,8 +3,8 @@ package messages;
 public enum MessageType {
   DISCONNECTED, 
   CONNECTED,
-  USER_TEXT,
-  USER_IMAGE,
-  SERVER, 
-  NOTIFICATION, 
+  USER_PUBLIC_TEXT,
+  USER_PUBLIC_IMAGE,
+  USER_PRIVATE_TEXT,
+  SERVER
 }

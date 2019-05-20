@@ -8,6 +8,7 @@ import java.util.ArrayList;
 public class Message implements Serializable {
 
   private User sender;
+  private User receiver;
   private MessageType type;
   private String text;
   private LocalDateTime sentDateTime;
@@ -97,4 +98,19 @@ public class Message implements Serializable {
   public void setImage(File image) {
     this.image = image;
   }
+
+  /**
+   * @return the receiver
+   */
+  public User getReceiver() {
+    return receiver;
+  }
+
+  /**
+   * @param receiver the receiver to set
+   */
+  public void setReceiver(User receiver) {
+    this.receiver = receiver;
+  }
+
 }
