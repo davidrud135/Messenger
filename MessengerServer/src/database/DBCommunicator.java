@@ -21,7 +21,8 @@ public class DBCommunicator {
 
   public DBCommunicator() {
     try {
-      conn = DBConnector.connect();
+//      conn = DBConnector.connectToLocalDB();
+      conn = DBConnector.connectToRemoteDB();
       System.out.println("Server has connected to Database.");
     } catch (SQLException ex) {
       System.err.println("Server cant connect to Database.");

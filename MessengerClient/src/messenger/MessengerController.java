@@ -38,8 +38,9 @@ public class MessengerController implements Initializable {
   
   public static User userData;
   
-  private ArrayList<User> usersList;
-          
+  private ArrayList<User> allUsersList;
+  private ArrayList<User> onlineUsersList;
+  
   @FXML
   private Label userNameLbl;
   @FXML
@@ -53,7 +54,7 @@ public class MessengerController implements Initializable {
   @FXML
   private ScrollPane chatScrollPane;
   @FXML
-  private Button chooseImageBtn;        
+  private Button chooseImageBtn;
   
   EventHandler<ActionEvent> addUserEmailToField = new EventHandler<ActionEvent>() {
     public void handle(ActionEvent ev) {
@@ -83,7 +84,7 @@ public class MessengerController implements Initializable {
       if (isMessagePrivate(msgText)) {
         String receiverEmail = msgText.substring(0, msgText.indexOf(":"));
         User receiverUser = null;
-        for (User user : usersList) {
+        for (User user : onlineUsersList) {
           if (user.getEmail().equals(receiverEmail)) {
             receiverUser = user;
             break;
@@ -114,11 +115,13 @@ public class MessengerController implements Initializable {
   public void setUserList(Message msg) {
     Platform.runLater(() -> {
       this.usersListView.getItems().clear();
-      usersList = msg.getUsers();
-      for (User user : usersList) {
-        if (user.getId() == userData.getId()) continue;
-        Label userNameLbl = new Label(user.toString());
-        userNameLbl.setPrefWidth(220);
+      allUsersList = msg.getAllUsersList();
+      onlineUsersList = msg.getOnlineUsersList();
+      for (User registeredUser : allUsersList) {
+        if (registeredUser.getId() == userData.getId()) continue;
+        
+        Label userNameLbl = new Label(registeredUser.toString());
+        userNameLbl.setStyle("-fx-font-weight: bold;");
         
         Image menuIcon = new Image(getClass().getResourceAsStream("/images/menu-vertical-icon.png"));
         ImageView menuIconView = new ImageView(menuIcon);
@@ -127,17 +130,29 @@ public class MessengerController implements Initializable {
         
         MenuButton kebabMenuBtn = new MenuButton();
         MenuItem privateMsgItem = new MenuItem("Private message");
-        privateMsgItem.setId(user.getEmail());
+        privateMsgItem.setId(registeredUser.getEmail());
         privateMsgItem.setOnAction(addUserEmailToField);
         kebabMenuBtn.getItems().add(privateMsgItem);
         kebabMenuBtn.setGraphic(menuIconView);
         kebabMenuBtn.setPrefSize(15, 15);
         kebabMenuBtn.getStyleClass().add("kebab-menu");
         
-        HBox userHBox = new HBox(userNameLbl, kebabMenuBtn);
-        userHBox.setSpacing(10);
-        userHBox.setAlignment(Pos.CENTER_LEFT);
-        this.usersListView.getItems().add(userHBox);
+        HBox userDataHBox = new HBox(userNameLbl);
+        userDataHBox.setSpacing(20);
+        userDataHBox.setPrefWidth(240);
+        userDataHBox.setAlignment(Pos.CENTER_LEFT);
+        
+        for (User onlineUser : onlineUsersList) {
+          if (registeredUser.getId() == onlineUser.getId()) {
+            Label onlineLabel = new Label("(Online)");
+            onlineLabel.setStyle("-fx-text-fill: color-blue;");
+            userDataHBox.getChildren().add(onlineLabel);
+          }
+        }
+        
+        HBox userRow = new HBox(userDataHBox, kebabMenuBtn);
+        userRow.setAlignment(Pos.CENTER_LEFT);
+        this.usersListView.getItems().add(userRow);
       }
     });
   }
@@ -258,7 +273,7 @@ public class MessengerController implements Initializable {
   
   public boolean isMessagePrivate(String text) {
     System.out.println(text);
-    return text.matches("^[A-Za-z0-9+_.-]+@(.+): .+$");
+    return text.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+: .+$");
   }
   
 }

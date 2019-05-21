@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.time.LocalDateTime;
+import javafx.scene.control.Alert;
 import messages.Message;
 import messages.MessageType;
 import messages.User;
@@ -21,7 +22,8 @@ import messenger.MessengerController;
  */
 public class Communicator implements Runnable {
   private Socket socket;
-  final public String SERVER_HOSTNAME = "localhost";
+  final public String LOCAL_SERVER_HOST = "127.0.0.1";
+  final public String REMOTE_SERVER_HOST = "95.46.98.47";
   final public int SERVER_PORT = 12345;
   private static ObjectOutputStream objOutStream;
   private static ObjectInputStream objInStream;
@@ -30,14 +32,20 @@ public class Communicator implements Runnable {
   
   public Communicator() {
     try {
-      socket = new Socket(SERVER_HOSTNAME, SERVER_PORT);
+//      socket = new Socket(REMOTE_SERVER_HOST, SERVER_PORT);
+      socket = new Socket(LOCAL_SERVER_HOST, SERVER_PORT);
       objOutStream = new ObjectOutputStream(socket.getOutputStream());
       objInStream = new ObjectInputStream(socket.getInputStream());
     } catch (IOException ex) {
-      System.err.println("Could not Connect");
+      Alert cantConnectToServerAlert = new Alert(Alert.AlertType.ERROR);
+      cantConnectToServerAlert.setHeaderText("Cant connect to server.");
+      cantConnectToServerAlert.setContentText("Please, try again.");
+      cantConnectToServerAlert.showAndWait();
+      ex.printStackTrace();
+      System.exit(0);
     }
     System.out.println(
-      String.format("Connection accepted %s:%d", socket.getInetAddress(), socket.getPort())
+      String.format("Conneccted to server with IP %s on port %d", socket.getInetAddress(), socket.getPort())
     );
   }
   
@@ -83,7 +91,7 @@ public class Communicator implements Runnable {
   }
   
   private void handleMessageObj(Message msg) {
-    String senderName = (msg.getSender() == null) ? "SERVER": msg.getSender().toString();
+    String senderName = (msg.getSender() == null) ? "Server": msg.getSender().toString();
     System.out.println(
       String.format(
         "Client recieved Message: %s, MessageType: %s, Sender: %s", 
@@ -101,8 +109,6 @@ public class Communicator implements Runnable {
         break;
       case USER_PRIVATE_TEXT:
         messengerController.addPrivateMessageToChat(msg);
-      case SERVER:
-//        messengerController.addAsServer(msg);
         break;
       case CONNECTED:
         messengerController.setUserList(msg);

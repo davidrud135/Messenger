@@ -46,3 +46,6 @@
     -fx-padding: 10 15;
     -fx-font-weight: bold;
 }
+.invalid-email {
+    -fx-border-color: red;
+}
