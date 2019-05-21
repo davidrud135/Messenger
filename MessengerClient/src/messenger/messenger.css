@@ -17,23 +17,40 @@
     -fx-background-color: color-white;
     -fx-border-color: transparent color-blue transparent transparent;
 }
-.chats-list {
+#usersListView {
     -fx-background-color: color-white;
     -fx-border-width: 1 1 0 0;
     -fx-border-color: color-blue color-blue transparent transparent;
     -fx-text-fill: color-blue;
     -fx-padding: 0;
 }
-.chats-list .list-cell {
+#usersListView .list-cell {
     -fx-background-color: color-white;
     -fx-font-size: 14px;
     -fx-padding: 15px;
 }
-.chats-list .list-cell:hover {
+#usersListView .list-cell:hover {
     -fx-background-color: color-light-blue;
 }
-.chats-list .list-cell:empty {
+#usersListView .list-cell:empty {
     visibility: hidden;
+}
+#usersListView .scroll-bar:horizontal {
+    -fx-scale-x: 0;
+}
+#usersListView .scroll-bar .thumb {
+    -fx-background-color: color-blue;
+}
+#usersListView .scroll-bar .increment-button ,
+#usersListView .scroll-bar .decrement-button {
+    -fx-background-color:transparent;
+    -fx-background-radius: 0em;
+    -fx-padding:0 10 0 0;
+}
+#usersListView  .scroll-bar .increment-arrow,
+#usersListView  .scroll-bar .decrement-arrow {
+    -fx-shape: " ";	
+    -fx-padding:0;
 }
 
 .chat-box {
@@ -56,9 +73,7 @@
     -fx-background-radius: 5px;
     -fx-padding: 5px;
 }
-.public-msg-box {
-    
-}
+
 .msg-sender, .msg-text, .msg-time {
     -fx-text-fill: color-white;
 }

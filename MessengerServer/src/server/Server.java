@@ -14,12 +14,15 @@ import java.net.SocketException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Server {
   
   private static final int PORT = 12345;
-  private static HashMap<User, ObjectOutputStream> usersOutStreams;
-  private static ArrayList<User> usersList;
+  private static HashMap<User, ObjectOutputStream> onlineUsersOutStream;
+  private static ArrayList<User> allUsersList;
+  private static ArrayList<User> onlineUsersList;
 
   public static void main(String[] args) throws IOException {
     ServerSocket listener = new ServerSocket(PORT);
@@ -28,9 +31,10 @@ public class Server {
     );
     
     new DBCommunicator();
-    usersOutStreams = new HashMap<>();
-    usersList = new ArrayList<>();
-//    usersList = DBCommunicator.getDBUsersList();
+    onlineUsersOutStream = new HashMap<>();
+    onlineUsersList = new ArrayList<>();
+    allUsersList = DBCommunicator.getDBUsersList();
+    showLists();
     
     try {
       while (true) {
@@ -67,6 +71,7 @@ public class Server {
           Object inputObj = objInStream.readObject();
           if (inputObj instanceof UserAuthData) {
             handleUserAuthDataObj((UserAuthData) inputObj);
+            showLists();
           } else if (inputObj instanceof Message) {
             handleMessageObj((Message) inputObj);
           }
@@ -98,6 +103,9 @@ public class Server {
           );
           objOutStream.writeObject(signUpResp);
           objOutStream.flush();
+          if (signUpResp.getType() == AuthRespondType.SIGN_UP_SUCCESS) {
+            allUsersList = DBCommunicator.getDBUsersList();
+          }
         } else {
           AuthRespond signInResp = DBCommunicator.signInUser(
             userAuthData.getEmail(), 
@@ -107,8 +115,8 @@ public class Server {
           objOutStream.flush();
           if (signInResp.getType() == AuthRespondType.SIGN_IN_SUCCESS) {
             user = signInResp.getSignedInUserData();
-            usersOutStreams.put(user, objOutStream);
-            usersList.add(user);
+            onlineUsersOutStream.put(user, objOutStream);
+            onlineUsersList.add(user);
             addUserToChat();
           }
         }          
@@ -142,15 +150,13 @@ public class Server {
         ex.printStackTrace();
       }
     }
-
+    
     private Message removeFromChat() throws IOException {
-      System.out.println("removeFromChat() method Enter");
       Message msg = new Message();
-      msg.setText("has left the chat.");
+      msg.setText(user.toString() + " has left the chat.");
       msg.setType(MessageType.DISCONNECTED);
       msg.setDateTime(LocalDateTime.now());
       writeMessageToChat(msg);
-      System.out.println("removeFromChat() method Exit");
       return msg;
     }
 
@@ -161,7 +167,6 @@ public class Server {
       Message msg = new Message();
       msg.setText(user.toString() + " has joined the chat.");
       msg.setType(MessageType.CONNECTED);
-      msg.setUsers(usersList);
       writeMessageToChat(msg);
       return msg;
     }
@@ -172,7 +177,7 @@ public class Server {
     private void writePrivateMessageToUser(Message msg) throws IOException {
       int receiverId = msg.getReceiver().getId();
       User receiverUser = null;
-      for (User user : usersList) {
+      for (User user : onlineUsersList) {
         if (user.getId() == receiverId) {
           receiverUser = user;
           break;
@@ -181,10 +186,10 @@ public class Server {
       System.out.println(
         String.format("Private msg from %s to %s", user.toString(), receiverUser.toString())
       );
-      ObjectOutputStream receiverObjectOutputStream = usersOutStreams.get(receiverUser);
+      ObjectOutputStream receiverObjectOutputStream = onlineUsersOutStream.get(receiverUser);
       receiverObjectOutputStream.writeObject(msg);
       receiverObjectOutputStream.flush();
-      ObjectOutputStream senderObjectOutputStream = usersOutStreams.get(user);
+      ObjectOutputStream senderObjectOutputStream = onlineUsersOutStream.get(user);
       senderObjectOutputStream.writeObject(msg);
       senderObjectOutputStream.flush();
     }
@@ -192,11 +197,17 @@ public class Server {
     /*
      * Creates and sends a Message to the listeners.
      */
-    private void writeMessageToChat(Message msg) throws IOException {
-      for (ObjectOutputStream userOutStream : usersOutStreams.values()) {
-        msg.setUsers(usersList);
-        userOutStream.writeObject(msg);
-        userOutStream.reset();
+    private void writeMessageToChat(Message msg) {
+      try {
+        for (ObjectOutputStream userOutStream : onlineUsersOutStream.values()) {
+          msg.setAllUsersList(allUsersList);
+          msg.setOnlineUsersList(onlineUsersList);
+          userOutStream.writeObject(msg);
+          userOutStream.reset();
+        }
+      } catch (IOException ex) {
+        System.out.println("Cant write msg to some user.");
+        ex.printStackTrace();
       }
     }
 
@@ -206,16 +217,16 @@ public class Server {
     private synchronized void closeConnections()  {
       System.out.println("closeConnections() method Enter");
       System.out.println(
-        String.format("Out streams: %d, usersList: %d", usersOutStreams.size(), usersList.size())
+        String.format("Out streams: %d, onlineUsersList: %d", onlineUsersOutStream.size(), onlineUsersList.size())
       );
       if (objOutStream != null) {
-        usersOutStreams.remove(user, objOutStream);
+        onlineUsersOutStream.remove(user, objOutStream);
         System.out.println(
           String.format("Out stream of user: %s has been removed!", user.toString())
         );
       }
       if (user != null) {
-        usersList.remove(user);
+        onlineUsersList.remove(user);
         System.out.println(
           String.format("User object: %s has been removed!", user.toString())
         );
@@ -233,9 +244,27 @@ public class Server {
         e.printStackTrace();
       }
       System.out.println(
-        String.format("Out streams: %d, usersList: %d", usersOutStreams.size(), usersList.size())
+        String.format("Out streams: %d, onlineUsersList: %d", onlineUsersOutStream.size(), onlineUsersList.size())
       );
       System.out.println("closeConnections() method Exit");
+      showLists();
     }
+  }
+  
+  static void showLists() {
+    System.out.println("------------------------------");
+    System.out.println(String.format("All users (%d):", allUsersList.size()));
+    for (User user : allUsersList) {
+      System.out.println(
+        String.format("%d %s %s", user.getId(), user.toString(), user.getEmail())
+      );
+    }
+    System.out.println(String.format("Online users (%d):", onlineUsersList.size()));
+    for (User user : onlineUsersList) {
+      System.out.println(
+        String.format("%d %s %s", user.getId(), user.toString(), user.getEmail())
+      );
+    }
+    System.out.println("------------------------------");
   }
 }

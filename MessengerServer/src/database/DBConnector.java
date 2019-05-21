@@ -5,23 +5,28 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBConnector {
-  private static String DB_NAME = "messenger";
-  private static String DB_USERNAME = "root";
-  private static String DB_PASSWORD = "";
-  private static String DB_IP = "localhost";
-  private static String DB_ENCODING = "?useUnicode=yes&characterEncoding=UTF-8";
-  private static String DB_URL = String.format("jdbc:mysql://%s/%s%s", DB_IP, DB_NAME, DB_ENCODING);
+  final private static int DB_PORT = 3306;
+  final private static String DB_ENCODING = "?useUnicode=yes&characterEncoding=UTF-8";
   
-  public static Connection connect() throws SQLException {
-    return DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD);
+  final private static String LOCAL_DB_NAME = "messenger";
+  final private static String LOCAL_DB_USERNAME = "root";
+  final private static String LOCAL_DB_PASSWORD = "";
+  final private static String LOCAL_DB_HOST = "localhost";
+  final private static String LOCAL_DB_URL = String.format("jdbc:mysql://%s:%d/%s%s", LOCAL_DB_HOST, DB_PORT, LOCAL_DB_NAME, DB_ENCODING);  
+  
+  final private static String REMOTE_DB_NAME = "sql7292476";
+  final private static String REMOTE_DB_USERNAME = "sql7292476";
+  final private static String REMOTE_DB_PASSWORD = "Ka7utRYIjz";
+  final private static String REMOTE_DB_HOST = "sql7.freemysqlhosting.net";
+  final private static String REMOTE_DB_URL = String.format("jdbc:mysql://%s:%d/%s%s", REMOTE_DB_HOST, DB_PORT, REMOTE_DB_NAME, DB_ENCODING);  
+  
+  public static Connection connectToLocalDB() throws SQLException {
+    return DriverManager.getConnection(LOCAL_DB_URL, LOCAL_DB_USERNAME, LOCAL_DB_PASSWORD);
   }
   
-  public static Connection connect(String databseName, String username, String password, String hostIP) throws SQLException {
-    DB_NAME = databseName;
-    DB_USERNAME = username;
-    DB_PASSWORD = password;
-    DB_IP = hostIP;
-    return DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD);
+  public static Connection connectToRemoteDB() throws SQLException {
+    return DriverManager.getConnection(REMOTE_DB_URL, REMOTE_DB_USERNAME, REMOTE_DB_PASSWORD);
+//    return DriverManager.getConnection("jdbc:mysql://sql7.freemysqlhosting.net:3306/sql7292476", DB_USERNAME, DB_PASSWORD);
   }
   
 }

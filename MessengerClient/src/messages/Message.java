@@ -12,7 +12,8 @@ public class Message implements Serializable {
   private MessageType type;
   private String text;
   private LocalDateTime sentDateTime;
-  private ArrayList<User> users;
+  private ArrayList<User> allUsersList;
+  private ArrayList<User> onlineUsersList;
   private File image;
 
   /**
@@ -72,17 +73,17 @@ public class Message implements Serializable {
   }
 
   /**
-   * @return the users
+   * @return the onlineUsersList
    */
-  public ArrayList<User> getUsers() {
-    return users;
+  public ArrayList<User> getOnlineUsersList() {
+    return onlineUsersList;
   }
 
   /**
-   * @param users the users to set
+   * @param onlineUsersList the onlineUsersList to set
    */
-  public void setUsers(ArrayList<User> users) {
-    this.users = users;
+  public void setOnlineUsersList(ArrayList<User> onlineUsersList) {
+    this.onlineUsersList = onlineUsersList;
   }
 
   /**
@@ -111,6 +112,20 @@ public class Message implements Serializable {
    */
   public void setReceiver(User receiver) {
     this.receiver = receiver;
+  }
+
+  /**
+   * @return the allUsersList
+   */
+  public ArrayList<User> getAllUsersList() {
+    return allUsersList;
+  }
+
+  /**
+   * @param allUsersList the allUsersList to set
+   */
+  public void setAllUsersList(ArrayList<User> allUsersList) {
+    this.allUsersList = allUsersList;
   }
 
 }

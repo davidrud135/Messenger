@@ -9,6 +9,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -54,6 +56,35 @@ public class AuthController implements Initializable {
       Bindings.isEmpty(signInEmailField.textProperty())
         .or(Bindings.isEmpty(signInPasswordField.textProperty()))
     );
+    
+    signUpEmailField.focusedProperty().addListener(new ChangeListener<Boolean>() {
+      @Override
+      public void changed(
+        ObservableValue<? extends Boolean> arg0, 
+        Boolean oldPropertyValue, Boolean newPropertyValue
+      ) {
+        System.out.println(newPropertyValue);
+      }
+    });
+//    this.signUpEmailField.textProperty().addListener((observable, oldValue, newValue) -> {
+//      System.out.println("sign up textfield changed from " + oldValue + " to " + newValue);
+//      boolean isEmailValid = newValue.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
+//      if (!isEmailValid) {
+//        signUpEmailField.setStyle("-fx-border-color: red;");
+//      } else {
+//        signUpEmailField.setStyle(null);
+//      }
+////      if (!isEmailValid) {
+////        signUpEmailField.getStyleClass().add("invalid-email");
+////      } else {
+////        signUpEmailField.getStyleClass().clear();
+////        signUpEmailField.getStyleClass().addAll("text-field", "text-input");
+////      }
+//      System.out.println(signUpEmailField.getStyleClass());
+//      System.out.println(
+//        String.format("Email %s is %s", newValue, isEmailValid)
+//      );
+//    });
   } 
   
   ///////////////  Sign Up Section  ///////////////
