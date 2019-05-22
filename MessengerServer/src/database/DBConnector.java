@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 public class DBConnector {
   final private static int DB_PORT = 3306;
-  final private static String DB_ENCODING = "?useUnicode=yes&characterEncoding=UTF-8";
+  final private static String DB_ENCODING = "?useUnicode=true&characterEncoding=UTF-8";
   
   final private static String LOCAL_DB_NAME = "messenger";
   final private static String LOCAL_DB_USERNAME = "root";

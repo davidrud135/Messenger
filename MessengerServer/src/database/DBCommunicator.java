@@ -10,6 +10,7 @@ import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import messages.User;
+import server.Server;
 
 /**
  *
@@ -31,6 +32,9 @@ public class DBCommunicator {
   }
   
   public static AuthRespond signUpUser(String name, String email, String password) {
+    System.out.println(
+      String.format("User with email '%s' is trying to Sign Up.", email)
+    );
     final String signUpQuery =  "INSERT INTO users (name, email, password) VALUES (?, ?, ?);";
     AuthRespond authRespond = new AuthRespond();
     try {
@@ -52,6 +56,9 @@ public class DBCommunicator {
   }
   
   public static AuthRespond signInUser(String email, String password) {
+    System.out.println(
+      String.format("User with email '%s' is trying to Sign In.", email)
+    );
     final String signInQuery = "SELECT id, name, email FROM users WHERE email = ? AND password = ?;";
     AuthRespond authRespond = new AuthRespond();
     try {
@@ -67,6 +74,9 @@ public class DBCommunicator {
         authRespond.setSignedInUser(signedInUser);
         authRespond.setType(AuthRespondType.SIGN_IN_SUCCESS);
         System.out.println("Success sign in.");
+        if (Server.hasOnlineDuplicate(userId)) {
+          authRespond.setType(AuthRespondType.SIGN_IN_DUPLICATE);
+        }
       } else {
         authRespond.setType(AuthRespondType.SIGN_IN_WRONG_DATA);
         System.out.println("Incorrect data.");

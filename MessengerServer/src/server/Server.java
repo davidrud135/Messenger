@@ -14,15 +14,13 @@ import java.net.SocketException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Server {
   
   private static final int PORT = 12345;
   private static HashMap<User, ObjectOutputStream> onlineUsersOutStream;
   private static ArrayList<User> allUsersList;
-  private static ArrayList<User> onlineUsersList;
+  public static ArrayList<User> onlineUsersList;
 
   public static void main(String[] args) throws IOException {
     ServerSocket listener = new ServerSocket(PORT);
@@ -34,7 +32,6 @@ public class Server {
     onlineUsersOutStream = new HashMap<>();
     onlineUsersList = new ArrayList<>();
     allUsersList = DBCommunicator.getDBUsersList();
-    showLists();
     
     try {
       while (true) {
@@ -71,7 +68,6 @@ public class Server {
           Object inputObj = objInStream.readObject();
           if (inputObj instanceof UserAuthData) {
             handleUserAuthDataObj((UserAuthData) inputObj);
-            showLists();
           } else if (inputObj instanceof Message) {
             handleMessageObj((Message) inputObj);
           }
@@ -91,9 +87,6 @@ public class Server {
     }
 
     private void handleUserAuthDataObj(UserAuthData userAuthData) {
-      System.out.println(
-        String.format("User with email \"%s\" is trying to login.", userAuthData.getEmail())
-      );
       try {
        if (userAuthData.getAuthType() == AuthType.SIGN_UP) {
           AuthRespond signUpResp = DBCommunicator.signUpUser(
@@ -111,13 +104,6 @@ public class Server {
             userAuthData.getEmail(), 
             userAuthData.getPassword()
           );
-          User userToSignIn = signInResp.getSignedInUser();
-          for (User onlineUser : onlineUsersList) {
-            if (userToSignIn.getId() == onlineUser.getId()) {
-              signInResp.setType(AuthRespondType.SIGN_IN_DUPLICATE);
-              break;
-            }         
-          }
           objOutStream.writeObject(signInResp);
           objOutStream.flush();
           if (signInResp.getType() == AuthRespondType.SIGN_IN_SUCCESS) {
@@ -254,24 +240,16 @@ public class Server {
         String.format("Out streams: %d, onlineUsersList: %d", onlineUsersOutStream.size(), onlineUsersList.size())
       );
       System.out.println("closeConnections() method Exit");
-      showLists();
     }
   }
   
-  static void showLists() {
-    System.out.println("------------------------------");
-    System.out.println(String.format("All users (%d):", allUsersList.size()));
-    for (User user : allUsersList) {
-      System.out.println(
-        String.format("%d %s %s", user.getId(), user.toString(), user.getEmail())
-      );
+  public static boolean hasOnlineDuplicate(int userId) {
+    for (User onlineUser : onlineUsersList) {
+      if (userId == onlineUser.getId()) {
+        return true;
+      }
     }
-    System.out.println(String.format("Online users (%d):", onlineUsersList.size()));
-    for (User user : onlineUsersList) {
-      System.out.println(
-        String.format("%d %s %s", user.getId(), user.toString(), user.getEmail())
-      );
-    }
-    System.out.println("------------------------------");
+    return false;
   }
+  
 }

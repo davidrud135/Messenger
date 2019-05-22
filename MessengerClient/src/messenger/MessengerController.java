@@ -12,6 +12,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -25,6 +26,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import messages.Message;
 import messages.User;
@@ -40,6 +42,10 @@ public class MessengerController implements Initializable {
   
   private ArrayList<User> allUsersList;
   private ArrayList<User> onlineUsersList;
+  
+  final private String EMAIL_REG_EX = "[^@\\s]+@[^@\\s]+\\.[^@\\s]+";
+  final private String EMPTY_PRIVATE_MSG_REG_EX = String.format("^%s:$", EMAIL_REG_EX);
+  final private String CORRECT_PRIVATE_MSG_REG_EX = String.format("^%s: .+$", EMAIL_REG_EX);
   
   @FXML
   private Label userNameLbl;
@@ -81,20 +87,7 @@ public class MessengerController implements Initializable {
     if (ev.getCode() == KeyCode.ENTER) {
       String msgText = this.messageField.getText().trim();
       if (msgText.isEmpty()) return;
-      if (isMessagePrivate(msgText)) {
-        String receiverEmail = msgText.substring(0, msgText.indexOf(":"));
-        User receiverUser = null;
-        for (User user : onlineUsersList) {
-          if (user.getEmail().equals(receiverEmail)) {
-            receiverUser = user;
-            break;
-          }
-        }
-        Communicator.sendPrivateTextMsg(msgText, receiverUser);
-      } else {
-        Communicator.sendTextMsg(msgText);      
-      }
-      this.messageField.clear();
+      handleMessage(msgText);
     }
   }
   
@@ -271,9 +264,46 @@ public class MessengerController implements Initializable {
     });
   }
   
-  public boolean isMessagePrivate(String text) {
-    System.out.println(text);
-    return text.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+: .+$");
+  private void handleMessage(String fieldText) {
+    if (fieldText.matches(EMPTY_PRIVATE_MSG_REG_EX)) {
+      Alert emptyPrivateMsgAlert = new Alert(Alert.AlertType.WARNING);
+      emptyPrivateMsgAlert.setHeaderText("Cant send empty private message!");
+      emptyPrivateMsgAlert.showAndWait();
+    } else if (fieldText.matches(CORRECT_PRIVATE_MSG_REG_EX)) {
+      String receiverEmail = fieldText.substring(0, fieldText.indexOf(":"));
+      User receiverUser = null;
+      for (User user : onlineUsersList) {
+        if (user.getEmail().equals(receiverEmail)) {
+          receiverUser = user;
+          break;
+        }
+      }
+      if (receiverUser == null) {
+        Alert privateMsgErrorAlert = new Alert(Alert.AlertType.WARNING);
+        privateMsgErrorAlert.setHeaderText(
+          String.format("Cant send private message to user with email '%s'!", receiverEmail)
+        );
+        privateMsgErrorAlert.setContentText(
+          "Reasons:"
+          + "\n- User is offline."
+          + "\n- User does't exist."
+          + "\n- Wrong private message format, should be 'email: text'"
+        );
+        privateMsgErrorAlert.showAndWait();
+        return;
+      }
+      if (receiverUser.getId() == userData.getId()) {
+        Alert selfPrivateMsgAlert = new Alert(Alert.AlertType.WARNING);
+        selfPrivateMsgAlert.setHeaderText("Cant write private message to yourself!");
+        selfPrivateMsgAlert.showAndWait();
+        return;
+      }
+      Communicator.sendPrivateTextMsg(fieldText, receiverUser);
+      this.messageField.clear();
+    } else {
+      Communicator.sendTextMsg(fieldText);
+      this.messageField.clear();
+    }
   }
   
 }

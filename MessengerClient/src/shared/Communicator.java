@@ -39,7 +39,7 @@ public class Communicator implements Runnable {
     } catch (IOException ex) {
       Alert cantConnectToServerAlert = new Alert(Alert.AlertType.ERROR);
       cantConnectToServerAlert.setHeaderText("Cant connect to server.");
-      cantConnectToServerAlert.setContentText("Please, try again.");
+      cantConnectToServerAlert.setContentText("Please, check your internet connection and try again.");
       cantConnectToServerAlert.showAndWait();
       ex.printStackTrace();
       System.exit(0);
