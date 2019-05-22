@@ -41,8 +41,8 @@ public class DBCommunicator {
       prepStatement.executeUpdate();
       authRespond.setType(AuthRespondType.SIGN_UP_SUCCESS);
     } catch (SQLIntegrityConstraintViolationException ex) {
-      authRespond.setType(AuthRespondType.SIGN_UP_EMAIL_DUPLICATE);
-      System.out.println(String.format("User with email '%s' already exist!", email));
+      authRespond.setType(AuthRespondType.SIGN_UP_DUPLICATE);
+      System.out.println(String.format("User with email '%s' already exists!", email));
     } catch (SQLException ex) {
       authRespond.setType(AuthRespondType.SIGN_UP_FAILURE);
       System.err.println("Can't sign up user.");
@@ -64,7 +64,7 @@ public class DBCommunicator {
         String userName = signInRS.getString("name");
         String userEmail = signInRS.getString("email");
         User signedInUser = new User(userId, userName, userEmail);
-        authRespond.setSignedInUserData(signedInUser);
+        authRespond.setSignedInUser(signedInUser);
         authRespond.setType(AuthRespondType.SIGN_IN_SUCCESS);
         System.out.println("Success sign in.");
       } else {

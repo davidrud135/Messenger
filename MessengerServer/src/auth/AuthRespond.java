@@ -16,14 +16,14 @@ public class AuthRespond implements Serializable {
   /**
    * @return the signedInUserData
    */
-  public User getSignedInUserData() {
+  public User getSignedInUser() {
     return signedInUserData;
   }
 
   /**
    * @param signedInUserData the signedInUserData to set
    */
-  public void setSignedInUserData(User signedInUserData) {
+  public void setSignedInUser(User signedInUserData) {
     this.signedInUserData = signedInUserData;
   }
   
