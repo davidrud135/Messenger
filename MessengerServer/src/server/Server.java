@@ -111,10 +111,17 @@ public class Server {
             userAuthData.getEmail(), 
             userAuthData.getPassword()
           );
+          User userToSignIn = signInResp.getSignedInUser();
+          for (User onlineUser : onlineUsersList) {
+            if (userToSignIn.getId() == onlineUser.getId()) {
+              signInResp.setType(AuthRespondType.SIGN_IN_DUPLICATE);
+              break;
+            }         
+          }
           objOutStream.writeObject(signInResp);
           objOutStream.flush();
           if (signInResp.getType() == AuthRespondType.SIGN_IN_SUCCESS) {
-            user = signInResp.getSignedInUserData();
+            user = signInResp.getSignedInUser();
             onlineUsersOutStream.put(user, objOutStream);
             onlineUsersList.add(user);
             addUserToChat();

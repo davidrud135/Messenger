@@ -116,7 +116,7 @@ public class AuthController implements Initializable {
           this.clearSignUpForm();
           this.accordion.setExpandedPane(signInPane);
           break;
-        case SIGN_UP_EMAIL_DUPLICATE:
+        case SIGN_UP_DUPLICATE:
           Alert userEmailDuplicateAlert = new Alert(AlertType.WARNING);
           userEmailDuplicateAlert.setHeaderText(String.format("User with email '%s' already exist!", email));
           userEmailDuplicateAlert.showAndWait();
@@ -170,8 +170,16 @@ public class AuthController implements Initializable {
         incorrectLoginDataAlert.showAndWait();
         this.signInPasswordField.requestFocus();
         break;
+      case SIGN_IN_DUPLICATE:
+        Alert signInUserDuplicateAlert = new Alert(AlertType.WARNING);
+        signInUserDuplicateAlert.setHeaderText(
+          String.format("User with email '%s' already signed in!", signInRespond.getSignedInUser().toString())
+        );
+        signInUserDuplicateAlert.showAndWait();
+        this.signInEmailField.requestFocus();
+        break;
       case SIGN_IN_SUCCESS:
-        User user = signInRespond.getSignedInUserData();
+        User user = signInRespond.getSignedInUser();
         MessengerController.userData = user;
         this.redirectToMessengerWindow();
         break;
