@@ -26,6 +26,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import messages.Message;
@@ -115,6 +117,8 @@ public class MessengerController implements Initializable {
         
         Label userNameLbl = new Label(registeredUser.toString());
         userNameLbl.setStyle("-fx-font-weight: bold;");
+        Label userEmailLbl = new Label(registeredUser.getEmail());
+        userEmailLbl.getStyleClass().add("user-email-lbl");
         
         Image menuIcon = new Image(getClass().getResourceAsStream("/images/menu-vertical-icon.png"));
         ImageView menuIconView = new ImageView(menuIcon);
@@ -130,16 +134,16 @@ public class MessengerController implements Initializable {
         kebabMenuBtn.setPrefSize(15, 15);
         kebabMenuBtn.getStyleClass().add("kebab-menu");
         
-        HBox userDataHBox = new HBox(userNameLbl);
-        userDataHBox.setSpacing(20);
+        HBox userDataHBox = new HBox(userNameLbl, userEmailLbl);
+        userDataHBox.setSpacing(15);
         userDataHBox.setPrefWidth(240);
         userDataHBox.setAlignment(Pos.CENTER_LEFT);
         
         for (User onlineUser : onlineUsersList) {
           if (registeredUser.getId() == onlineUser.getId()) {
-            Label onlineLabel = new Label("(Online)");
-            onlineLabel.setStyle("-fx-text-fill: color-blue;");
-            userDataHBox.getChildren().add(onlineLabel);
+            Circle circle = new Circle(5);
+            circle.setFill(Color.DEEPSKYBLUE);
+            userDataHBox.getChildren().add(0, circle);
           }
         }
         
@@ -192,7 +196,7 @@ public class MessengerController implements Initializable {
       HBox hMsgBox = new HBox();
       hMsgBox.prefWidthProperty().bind(this.chatBox.widthProperty());
       VBox messageBox = new VBox(msgSenderLbl, imageView, msgTimeLbl);
-      messageBox.getStyleClass().add("msg-box");
+      messageBox.getStyleClass().add("public-msg-box");
       messageBox.setMinWidth(100);
       messageBox.setMinHeight(100);
       messageBox.setMaxWidth(500);

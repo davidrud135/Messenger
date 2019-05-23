@@ -1,60 +1,102 @@
 * {
-    color-light-green: #5CDB95;
-    color-dark-green: #379683;
+    default-color: #ecf2f6;
     color-light-blue: #c5d2e8;
     color-blue: #05386B;
-    color-white: #ecf2f6;
     color-grey: #dfe3e6;
 }
 
 .scroll-pane .viewport {
-    -fx-background-color: color-white;
+    -fx-background-color: default-color;
 }
 .messenger-window {
-    -fx-background-color: color-white;
+    -fx-background-color: default-color;
 }
 .user-pane {
-    -fx-background-color: color-white;
+    -fx-background-color: default-color;
     -fx-border-color: transparent color-blue transparent transparent;
 }
 #usersListView {
-    -fx-background-color: color-white;
+    -fx-background-color: default-color;
     -fx-border-width: 1 1 0 0;
     -fx-border-color: color-blue color-blue transparent transparent;
     -fx-text-fill: color-blue;
     -fx-padding: 0;
 }
 #usersListView .list-cell {
-    -fx-background-color: color-white;
+    -fx-background-color: default-color;
     -fx-font-size: 14px;
     -fx-padding: 15px;
 }
 #usersListView .list-cell:hover {
     -fx-background-color: color-light-blue;
 }
+#usersListView .list-cell:hover .user-email-lbl {
+    -fx-text-fill: black;
+}
 #usersListView .list-cell:empty {
     visibility: hidden;
 }
-#usersListView .scroll-bar:horizontal {
+
+.scroll-bar:horizontal {
     -fx-scale-x: 0;
-}
-#usersListView .scroll-bar .thumb {
+}/*
+.scroll-bar .thumb {
     -fx-background-color: color-blue;
 }
-#usersListView .scroll-bar .increment-button ,
-#usersListView .scroll-bar .decrement-button {
+.scroll-bar .increment-button ,
+.scroll-bar .decrement-button {
     -fx-background-color:transparent;
     -fx-background-radius: 0em;
-    -fx-padding:0 10 0 0;
+    -fx-padding: 0 10 0 0;
 }
-#usersListView  .scroll-bar .increment-arrow,
-#usersListView  .scroll-bar .decrement-arrow {
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
     -fx-shape: " ";	
-    -fx-padding:0;
+    -fx-padding: 0;
+}
+*/
+
+.scroll-bar {
+   -fx-background-color: transparent;
+   -fx-focus-color: transparent;
+   -fx-faint-focus-color: transparent;
 }
 
+.scroll-bar .track {
+    -fx-background-color :transparent;
+    -fx-border-color :transparent;
+    -fx-background-radius : 2.0em;
+}
+
+.scroll-bar .track-background {
+   -fx-background-color: transparent;
+   -fx-background-insets: 0;
+   -fx-background-radius: 2em;
+}
+
+.scroll-bar .increment-button ,
+.scroll-bar .decrement-button {
+    -fx-background-color :transparent;
+    -fx-background-radius : 0.0em;
+    -fx-padding :0.0 5.0 0.0 0.0;
+
+}
+
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-shape : " ";
+    -fx-padding :0.0 0.15em;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color : color-blue;
+    -fx-background-insets : 2.0, 0.0, 0.0;
+    -fx-background-radius : 2.0em;
+}
+
+
 .chat-box {
-    -fx-background-color: color-white;
+    -fx-background-color: default-color;
     -fx-padding: 15px;
 }
 
@@ -75,7 +117,7 @@
 }
 
 .msg-sender, .msg-text, .msg-time {
-    -fx-text-fill: color-white;
+    -fx-text-fill: default-color;
 }
 .msg-sender {
     -fx-font-size: 12px;
@@ -92,7 +134,7 @@
 #chooseImageBtn {
     -fx-cursor: hand;
     -fx-opacity: 0.6;
-    -fx-background-color: color-white;
+    -fx-background-color: transparent;
 }
 #chooseImageBtn:hover {
     -fx-opacity: 1;
@@ -105,13 +147,7 @@
     -fx-padding: 5px 10px;
 }
 
-.kebab-menu > .arrow-button {
-    -fx-padding: 0;
-}
-
-.kebab-menu > .arrow-button > .arrow {
-    -fx-padding: 0;
-}
+/* User kebab manu */
 .kebab-menu {
     -fx-background-color: transparent;
     -fx-background-radius: 10px;
@@ -119,4 +155,21 @@
 }
 .kebab-menu:hover {
     -fx-background-color: color-grey;
+}
+.kebab-menu > .arrow-button {
+    -fx-padding: 0;
+}
+.kebab-menu > .arrow-button > .arrow {
+    -fx-padding: 0;
+}
+
+.user-email-lbl {
+    -fx-text-fill: default-color;
+}
+
+#messageField {
+    -fx-background-color: transparent;
+}
+.message-control-hbox {
+    -fx-background-color: white;
 }
