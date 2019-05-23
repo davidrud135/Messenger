@@ -30,7 +30,7 @@
             </Label>
          </children>
       </Pane>
-      <HBox layoutX="300.0" layoutY="550.0" prefHeight="50.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="300.0" AnchorPane.rightAnchor="0.0">
+      <HBox layoutX="300.0" layoutY="550.0" prefHeight="50.0" styleClass="message-control-hbox" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="300.0" AnchorPane.rightAnchor="0.0">
          <children>
             <Button fx:id="chooseImageBtn" focusTraversable="false" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" />
             <TextField fx:id="messageField" onKeyReleased="#onMessageSend" prefHeight="50.0" prefWidth="650.0" promptText="Write Message" styleClass="choose-img-btn" HBox.hgrow="ALWAYS">
@@ -42,7 +42,7 @@
       </HBox>
       <ScrollPane fx:id="chatScrollPane" fitToWidth="true" focusTraversable="false" layoutX="300.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="300.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <content>
-            <VBox fx:id="chatBox" fillWidth="false" prefHeight="550.0" prefWidth="700.0" spacing="10.0" styleClass="chat-box" />
+            <VBox fx:id="chatBox" fillWidth="false" prefWidth="700.0" spacing="10.0" styleClass="chat-box" />
          </content>
          <styleClass>
             <String fx:value="edge-to-edge" />
