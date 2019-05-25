@@ -110,6 +110,9 @@ public class Communicator implements Runnable {
       case USER_PRIVATE_TEXT:
         messengerController.addPrivateMessageToChat(msg);
         break;
+      case USER_PRIVATE_IMAGE:
+        messengerController.addPrivateImageToChat(msg);
+        break;
       case CONNECTED:
         messengerController.setUserList(msg);
         messengerController.addNotificationToChat(msg);
@@ -128,15 +131,30 @@ public class Communicator implements Runnable {
     Communicator.messengerController = messengerController;
   }
   
-  public static void sendPrivateTextMsg(String msgText, User receiver) {
-    String text = msgText.substring(msgText.indexOf(" ") + 1);
+  public static void sendPrivateTextMsg(String fieldText, User receiver) {
+    String msgText = fieldText.substring(fieldText.indexOf(" ") + 1);
     try {
       Message msg = new Message();
       msg.setSender(userData);
       msg.setReceiver(receiver);
       msg.setType(MessageType.USER_PRIVATE_TEXT);
-      msg.setText(Coder.encrypt(text));
+      msg.setText(Coder.encrypt(msgText));
       msg.setDateTime(LocalDateTime.now());
+      objOutStream.writeObject(msg);
+      objOutStream.flush();
+    } catch (IOException ex) {
+      ex.printStackTrace();
+    }
+  }
+  
+  public static void sendPrivateImageMsg(File imageFile, User receiver) {
+    try {
+      Message msg = new Message();
+      msg.setSender(userData);
+      msg.setReceiver(receiver);
+      msg.setType(MessageType.USER_PRIVATE_IMAGE);
+      msg.setDateTime(LocalDateTime.now());
+      msg.setImage(imageFile);
       objOutStream.writeObject(msg);
       objOutStream.flush();
     } catch (IOException ex) {

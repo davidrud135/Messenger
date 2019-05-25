@@ -5,6 +5,7 @@
         <group>
             <file>file:/C:/Java/FX/Coursework/MessengerClient/src/messenger/MessengerController.java</file>
             <file>file:/C:/Java/FX/Coursework/MessengerClient/src/shared/Communicator.java</file>
+            <file>file:/C:/Java/FX/Coursework/MessengerClient/src/auth/gui/AuthController.java</file>
         </group>
     </open-files>
 </project-private>

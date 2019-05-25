@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -24,11 +25,11 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import messages.Message;
 import messages.User;
@@ -64,7 +65,7 @@ public class MessengerController implements Initializable {
   @FXML
   private Button chooseImageBtn;
   
-  EventHandler<ActionEvent> addUserEmailToField = new EventHandler<ActionEvent>() {
+  EventHandler<ActionEvent> onPrivateMsgSend = new EventHandler<ActionEvent>() {
     public void handle(ActionEvent ev) {
       MenuItem item = (MenuItem) ev.getSource();
       String userEmail = item.getId();
@@ -73,6 +74,32 @@ public class MessengerController implements Initializable {
       );
       messageField.requestFocus();
       messageField.selectPositionCaret(userEmail.length() + 2);
+    }
+  };
+  
+  EventHandler<ActionEvent> onImageMsgSend = new EventHandler<ActionEvent>() {
+    public void handle(ActionEvent ev) {
+      File image = openImageChooser();
+      if (image != null) {
+        Communicator.sendImageMsg(image);
+      }
+    }
+  };
+  
+  EventHandler<ActionEvent> onPrivateImageMsgSend = new EventHandler<ActionEvent>() {
+    public void handle(ActionEvent ev) {
+      MenuItem item = (MenuItem) ev.getSource();
+      String receiverEmail = item.getId();
+      File image = openImageChooser();
+      if (image == null) return;
+      User receiverUser = null;
+      for (User user : onlineUsersList) {
+        if (user.getEmail().equals(receiverEmail)) {
+          receiverUser = user;
+          break;
+        }
+      }
+      Communicator.sendPrivateImageMsg(image, receiverUser);
     }
   };
   
@@ -93,19 +120,15 @@ public class MessengerController implements Initializable {
     }
   }
   
-  public void openImageChooser() {
+  public File openImageChooser() {
     FileChooser fileChooser = new FileChooser();
     fileChooser.setTitle("Select Image File");
     fileChooser.getExtensionFilters().addAll(
       new FileChooser.ExtensionFilter("Image Files", "*.bmp", "*.png", "*.jpg")
     );
     File selectedImage = fileChooser.showOpenDialog(this.chooseImageBtn.getScene().getWindow());
-
-    if (selectedImage != null) {
-      Communicator.sendImageMsg(selectedImage);
-    }
+    return selectedImage;
   }
-  
   
   public void setUserList(Message msg) {
     Platform.runLater(() -> {
@@ -128,16 +151,23 @@ public class MessengerController implements Initializable {
         MenuButton kebabMenuBtn = new MenuButton();
         MenuItem privateMsgItem = new MenuItem("Private message");
         privateMsgItem.setId(registeredUser.getEmail());
-        privateMsgItem.setOnAction(addUserEmailToField);
-        kebabMenuBtn.getItems().add(privateMsgItem);
-        kebabMenuBtn.setGraphic(menuIconView);
-        kebabMenuBtn.setPrefSize(15, 15);
-        kebabMenuBtn.getStyleClass().add("kebab-menu");
+        privateMsgItem.setOnAction(onPrivateMsgSend);
+        MenuItem privateImageMsgItem = new MenuItem("Private image");
+        privateImageMsgItem.setId(registeredUser.getEmail());
+        privateImageMsgItem.setOnAction(onPrivateImageMsgSend);
         
         HBox userDataHBox = new HBox(userNameLbl, userEmailLbl);
         userDataHBox.setSpacing(15);
         userDataHBox.setPrefWidth(240);
         userDataHBox.setAlignment(Pos.CENTER_LEFT);
+        
+        kebabMenuBtn.getItems().addAll(privateMsgItem, privateImageMsgItem);
+        kebabMenuBtn.setGraphic(menuIconView);
+        kebabMenuBtn.setPrefSize(15, 15);
+        kebabMenuBtn.getStyleClass().add("kebab-menu");
+        kebabMenuBtn.disableProperty().bind(
+          Bindings.size(userDataHBox.getChildren()).isNotEqualTo(3)
+        );
         
         for (User onlineUser : onlineUsersList) {
           if (registeredUser.getId() == onlineUser.getId()) {
@@ -160,7 +190,7 @@ public class MessengerController implements Initializable {
     imageIconView.setFitHeight(35);
     imageIconView.setFitWidth(35);
     this.chooseImageBtn.setGraphic(imageIconView);
-    this.chooseImageBtn.setOnAction(ev -> openImageChooser());
+    this.chooseImageBtn.setOnAction(onImageMsgSend);
   }
   
   public void addNotificationToChat(Message msg) {
@@ -207,6 +237,44 @@ public class MessengerController implements Initializable {
       hMsgBox.getChildren().add(messageBox);
       if (msg.getSender().getId() == userData.getId()) {
         hMsgBox.setAlignment(Pos.CENTER_RIGHT);
+      }
+      this.chatBox.getChildren().add(hMsgBox);
+    });
+  }
+  
+  public void addPrivateImageToChat(Message msg) {
+    Platform.runLater(() -> {
+      String msgSenderName = msg.getSender().toString();
+      File msgImage = msg.getImage();
+      Image image = null;
+      try {
+        image = new Image(msgImage.toURI().toURL().toString());
+      } catch (MalformedURLException ex) {
+        System.err.println("Cant parse image message");
+        ex.printStackTrace();
+      }
+      ImageView imageView = new ImageView(image);
+      
+      String msgDateTime = msg.getDateTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+      Label msgSenderLbl = new Label("Private image from " + msgSenderName);
+      Label msgTimeLbl = new Label(msgDateTime);
+      msgSenderLbl.getStyleClass().add("msg-sender");
+      msgTimeLbl.getStyleClass().add("msg-time");
+      HBox hMsgBox = new HBox();
+      hMsgBox.prefWidthProperty().bind(this.chatBox.widthProperty());
+      VBox messageBox = new VBox(msgSenderLbl, imageView, msgTimeLbl);
+      messageBox.getStyleClass().add("private-msg-box");
+      messageBox.setMinWidth(100);
+      messageBox.setMinHeight(100);
+      messageBox.setMaxWidth(500);
+      messageBox.setMaxHeight(500);
+      msgTimeLbl.prefWidthProperty().bind(messageBox.widthProperty());
+      imageView.fitWidthProperty().bind(messageBox.widthProperty().subtract(10));
+      imageView.fitHeightProperty().bind(messageBox.heightProperty().subtract(40));
+      hMsgBox.getChildren().add(messageBox);
+      if (msg.getSender().getId() == userData.getId()) {
+        hMsgBox.setAlignment(Pos.CENTER_RIGHT);
+        msgSenderLbl.setText("Private message to " + msg.getReceiver());
       }
       this.chatBox.getChildren().add(hMsgBox);
     });

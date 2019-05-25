@@ -9,6 +9,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -42,49 +43,16 @@ public class AuthController implements Initializable {
   
   private static Communicator communicator;
   
+  private String validEmailRegEx = "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$";
+  private String invalidBorderStyle = "-fx-text-box-border: #B22222;";
+  private String validBorderStyle = "-fx-text-box-border: #3CB371;";
+  
   @Override
   public void initialize(URL url, ResourceBundle rb) {
     communicator = new Communicator();
     this.accordion.setExpandedPane(signInPane);
-    this.signUpBtn.disableProperty().bind(
-      Bindings.isEmpty(signUpNameField.textProperty())
-        .or(Bindings.isEmpty(signUpEmailField.textProperty()))
-        .or(Bindings.isEmpty(signUpPasswordField.textProperty()))
-        .or(Bindings.isEmpty(signUpRePasswordField.textProperty()))
-    );
-    this.signInBtn.disableProperty().bind(
-      Bindings.isEmpty(signInEmailField.textProperty())
-        .or(Bindings.isEmpty(signInPasswordField.textProperty()))
-    );
-    
-    signUpEmailField.focusedProperty().addListener(new ChangeListener<Boolean>() {
-      @Override
-      public void changed(
-        ObservableValue<? extends Boolean> arg0, 
-        Boolean oldPropertyValue, Boolean newPropertyValue
-      ) {
-        System.out.println(newPropertyValue);
-      }
-    });
-//    this.signUpEmailField.textProperty().addListener((observable, oldValue, newValue) -> {
-//      System.out.println("sign up textfield changed from " + oldValue + " to " + newValue);
-//      boolean isEmailValid = newValue.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
-//      if (!isEmailValid) {
-//        signUpEmailField.setStyle("-fx-border-color: red;");
-//      } else {
-//        signUpEmailField.setStyle(null);
-//      }
-////      if (!isEmailValid) {
-////        signUpEmailField.getStyleClass().add("invalid-email");
-////      } else {
-////        signUpEmailField.getStyleClass().clear();
-////        signUpEmailField.getStyleClass().addAll("text-field", "text-input");
-////      }
-//      System.out.println(signUpEmailField.getStyleClass());
-//      System.out.println(
-//        String.format("Email %s is %s", newValue, isEmailValid)
-//      );
-//    });
+    this.setSignUpFieldsValidation();
+    this.setSignInFieldsValidation();
   } 
   
   ///////////////  Sign Up Section  ///////////////
@@ -98,6 +66,63 @@ public class AuthController implements Initializable {
   private PasswordField signUpRePasswordField;
   @FXML
   private Button signUpBtn;
+  
+  private BooleanBinding signUpNameFieldValidator;
+  private BooleanBinding signUpEmailFieldValidator;
+  private BooleanBinding signUpPasswordFieldValidator;
+  private BooleanBinding signUpRePasswordFieldValidator;
+  
+  private ChangeListener<Boolean> signUpNameFieldFocusListener = new ChangeListener<Boolean>() {
+    @Override
+    public void changed(ObservableValue<? extends Boolean> arg0, Boolean notFocused, Boolean focused) {
+      if (notFocused) {
+        if (signUpNameFieldValidator.get()) {
+          signUpNameField.setStyle(invalidBorderStyle);
+        } else {
+          signUpNameField.setStyle(validBorderStyle);
+        }
+      }
+    }
+  };
+  
+  private ChangeListener<Boolean> signUpEmailFieldFocusListener = new ChangeListener<Boolean>() {
+    @Override
+    public void changed(ObservableValue<? extends Boolean> arg0, Boolean notFocused, Boolean focused) {
+      if (notFocused) {
+        if (signUpEmailFieldValidator.get()) {
+          signUpEmailField.setStyle(invalidBorderStyle);
+        } else {
+          signUpEmailField.setStyle(validBorderStyle);
+        }
+      }
+    }
+  };
+  
+  private ChangeListener<Boolean> signUpPasswordFieldFocusListener = new ChangeListener<Boolean>() {
+    @Override
+    public void changed(ObservableValue<? extends Boolean> arg0, Boolean notFocused, Boolean focused) {
+      if (notFocused) {
+        if (signUpPasswordFieldValidator.get()) {
+          signUpPasswordField.setStyle(invalidBorderStyle);
+        } else {
+          signUpPasswordField.setStyle(validBorderStyle);
+        }
+      }
+    }
+  };
+  
+  private ChangeListener<Boolean> signUpRePasswordFieldFocusListener = new ChangeListener<Boolean>() {
+    @Override
+    public void changed(ObservableValue<? extends Boolean> arg0, Boolean notFocused, Boolean focused) {
+      if (notFocused) {
+        if (signUpRePasswordFieldValidator.get()) {
+          signUpRePasswordField.setStyle(invalidBorderStyle);
+        } else {
+          signUpRePasswordField.setStyle(validBorderStyle);
+        }
+      }
+    }
+  };
   
   @FXML
   private void onSignUp(ActionEvent ev) {
@@ -136,6 +161,27 @@ public class AuthController implements Initializable {
     }
   }
   
+  private void setSignUpFieldsValidation() {
+    signUpNameFieldValidator = Bindings.isEmpty(signUpNameField.textProperty());
+    signUpEmailFieldValidator = Bindings.createBooleanBinding(() ->
+      !signUpEmailField.getText().matches(validEmailRegEx),
+      signUpEmailField.textProperty()
+    );
+    signUpPasswordFieldValidator = Bindings.isEmpty(signUpPasswordField.textProperty());
+    signUpRePasswordFieldValidator = Bindings.isEmpty(signUpRePasswordField.textProperty());
+    
+    signUpNameField.focusedProperty().addListener(signUpNameFieldFocusListener);
+    signUpEmailField.focusedProperty().addListener(signUpEmailFieldFocusListener);
+    signUpPasswordField.focusedProperty().addListener(signUpPasswordFieldFocusListener);
+    signUpRePasswordField.focusedProperty().addListener(signUpRePasswordFieldFocusListener);
+    this.signUpBtn.disableProperty().bind(
+      signUpNameFieldValidator
+      .or(signUpEmailFieldValidator)
+      .or(signUpPasswordFieldValidator)
+      .or(signUpRePasswordFieldValidator)
+    );
+  }
+  
   private void clearSignUpForm() {
     this.signUpNameField.clear();
     this.signUpEmailField.clear();
@@ -153,6 +199,35 @@ public class AuthController implements Initializable {
   private PasswordField signInPasswordField;
   @FXML
   public Button signInBtn;
+  
+  private BooleanBinding signInEmailFieldValidator;
+  private BooleanBinding signInPasswordFieldValidator;
+  
+  private ChangeListener<Boolean> signInEmailFieldFocusListener = new ChangeListener<Boolean>() {
+    @Override
+    public void changed(ObservableValue<? extends Boolean> arg0, Boolean notFocused, Boolean focused) {
+      if (notFocused) {
+        if (signInEmailFieldValidator.get()) {
+          signInEmailField.setStyle(invalidBorderStyle);
+        } else {
+          signInEmailField.setStyle(validBorderStyle);
+        }
+      }
+    }
+  };
+  
+  private ChangeListener<Boolean> signInPasswordFieldFocusListener = new ChangeListener<Boolean>() {
+    @Override
+    public void changed(ObservableValue<? extends Boolean> arg0, Boolean notFocused, Boolean focused) {
+      if (notFocused) {
+        if (signInPasswordFieldValidator.get()) {
+          signInPasswordField.setStyle(invalidBorderStyle);
+        } else {
+          signInPasswordField.setStyle(validBorderStyle);
+        }
+      }
+    }
+  };
   
   @FXML
   public void onSignIn(ActionEvent ev) {
@@ -190,6 +265,23 @@ public class AuthController implements Initializable {
         break;
     }
   }
+  
+  private void setSignInFieldsValidation() {
+    signInEmailFieldValidator = Bindings.createBooleanBinding(() ->
+      !signInEmailField.getText().matches(validEmailRegEx),
+      signInEmailField.textProperty()
+    );
+    signInPasswordFieldValidator = Bindings.isEmpty(signInPasswordField.textProperty());
+    
+    signInEmailField.focusedProperty().addListener(signInEmailFieldFocusListener);
+    signInPasswordField.focusedProperty().addListener(signInPasswordFieldFocusListener);
+    this.signInBtn.disableProperty().bind(
+      signInEmailFieldValidator
+      .or(signInPasswordFieldValidator)
+    );
+  }
+  
+  /////////////// General methods ///////////////
   
   private void redirectToMessengerWindow() {
     try {

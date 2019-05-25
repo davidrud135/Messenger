@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="600.0" minWidth="1000.0" prefHeight="600.0" prefWidth="1000.0" styleClass="messenger-window" stylesheets="@messenger.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="messenger.MessengerController">
+<AnchorPane id="AnchorPane" fx:id="messengerAnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="600.0" minWidth="1000.0" prefHeight="600.0" prefWidth="1000.0" styleClass="messenger-window" stylesheets="@messenger.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="messenger.MessengerController">
    <children>
       <ListView fx:id="usersListView" fixedCellSize="0.0" focusTraversable="false" layoutY="100.0" minHeight="200.0" minWidth="200.0" prefHeight="500.0" prefWidth="300.0" styleClass="users-list" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="100.0" />
       <Pane prefHeight="100.0" prefWidth="300.0" styleClass="user-pane" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
