@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 import messages.User;
 import server.Server;
 
@@ -22,13 +24,34 @@ public class DBCommunicator {
 
   public DBCommunicator() {
     try {
-//      conn = DBConnector.connectToLocalDB();
-      conn = DBConnector.connectToRemoteDB();
+//      conn = DBConnector.connectToRemoteDB();
+      conn = DBConnector.connectToLocalDB();
       System.out.println("Server has connected to Database.");
     } catch (SQLException ex) {
       System.err.println("Server cant connect to Database.");
       ex.printStackTrace();
     }
+    launchConnectionRefresher();
+  }
+  
+  private static void launchConnectionRefresher() {
+    long taskInterval = 1000 * 60 * 60 * 5;
+    Timer timer = new Timer ();
+    TimerTask task = new TimerTask () {
+      @Override
+      public void run () {
+        try {
+          System.out.println("Refreshing DB connection..");
+          String query = "SELECT 1";
+          Statement st = conn.createStatement();
+          st.executeQuery(query);
+        } catch (SQLException ex) {
+          System.err.println("Can't refresh DB connection.");
+          ex.printStackTrace();
+        }
+      }
+    };
+    timer.schedule(task, taskInterval, taskInterval);
   }
   
   public static AuthRespond signUpUser(String name, String email, String password) {

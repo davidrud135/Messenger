@@ -138,6 +138,9 @@ public class Server {
           case USER_PRIVATE_TEXT:
             writePrivateMessageToUser(msg);
             break;
+          case USER_PRIVATE_IMAGE:
+            writePrivateMessageToUser(msg);
+            break;
         }
       } catch (IOException ex) {
         ex.printStackTrace();
