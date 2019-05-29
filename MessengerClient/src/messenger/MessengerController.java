@@ -1,12 +1,15 @@
 package messenger;
 
+import shared.Coder;
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.net.MalformedURLException;
+import java.io.InputStream;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -28,15 +31,14 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import messages.Message;
 import messages.User;
 import shared.Communicator;
 
 /**
- *
- * @author David RJ
+ * Class controller for messenger window functionality.
+ * @author David Rudenko
  */
 public class MessengerController implements Initializable {
   
@@ -63,8 +65,19 @@ public class MessengerController implements Initializable {
   private ScrollPane chatScrollPane;
   @FXML
   private Button chooseImageBtn;
+    
+  EventHandler<KeyEvent> onMsgSend = new EventHandler<KeyEvent>() {
+    @Override
+    public void handle(KeyEvent ev) {
+      if (ev.getCode() == KeyCode.ENTER) {
+        String msgText = messageField.getText().trim();
+        if (msgText.isEmpty()) return;
+        handleMessage(msgText);
+      }
+    }
+  };
   
-  EventHandler<ActionEvent> addUserEmailToField = new EventHandler<ActionEvent>() {
+  EventHandler<ActionEvent> onPrivateMsgSend = new EventHandler<ActionEvent>() {
     public void handle(ActionEvent ev) {
       MenuItem item = (MenuItem) ev.getSource();
       String userEmail = item.getId();
@@ -76,37 +89,64 @@ public class MessengerController implements Initializable {
     }
   };
   
+  EventHandler<ActionEvent> onImageMsgSend = new EventHandler<ActionEvent>() {
+    public void handle(ActionEvent ev) {
+      File image = openImageChooser();
+      if (image == null) return;
+      Communicator.sendImageMsg(image);
+    }
+  };
+  
+  EventHandler<ActionEvent> onPrivateImageMsgSend = new EventHandler<ActionEvent>() {
+    public void handle(ActionEvent ev) {
+      File image = openImageChooser();
+      if (image == null) return;
+      MenuItem item = (MenuItem) ev.getSource();
+      String receiverEmail = item.getId();
+      User receiverUser = null;
+      for (User user : onlineUsersList) {
+        if (user.getEmail().equals(receiverEmail)) {
+          receiverUser = user;
+          break;
+        }
+      }
+      Communicator.sendPrivateImageMsg(image, receiverUser);
+    }
+  };
+
+  /**
+   * Initializes main messenger window functionality.
+   * @param url url link.
+   * @param rb resource bundle.
+   */
   @Override
   public void initialize(URL url, ResourceBundle rb) {
     this.userNameLbl.setText(userData.toString());
     this.userEmailLbl.setText(userData.getEmail());
     this.setImageChooserBtn();
     this.chatBox.heightProperty().addListener(observable -> this.chatScrollPane.setVvalue(1D));
+    this.messageField.setOnKeyReleased(onMsgSend);
   }
   
-  @FXML
-  private void onMessageSend(KeyEvent ev) {
-    if (ev.getCode() == KeyCode.ENTER) {
-      String msgText = this.messageField.getText().trim();
-      if (msgText.isEmpty()) return;
-      handleMessage(msgText);
-    }
-  }
-  
-  public void openImageChooser() {
+  /**
+   * Opens default image chooser window.
+   * @return chosen file.
+   */
+  public File openImageChooser() {
     FileChooser fileChooser = new FileChooser();
+    
     fileChooser.setTitle("Select Image File");
     fileChooser.getExtensionFilters().addAll(
       new FileChooser.ExtensionFilter("Image Files", "*.bmp", "*.png", "*.jpg")
     );
     File selectedImage = fileChooser.showOpenDialog(this.chooseImageBtn.getScene().getWindow());
-
-    if (selectedImage != null) {
-      Communicator.sendImageMsg(selectedImage);
-    }
+    return selectedImage;
   }
   
-  
+  /**
+   * Sets list of users.
+   * @param msg message object of type {@link messages.Message}.
+   */
   public void setUserList(Message msg) {
     Platform.runLater(() -> {
       this.usersListView.getItems().clear();
@@ -128,16 +168,23 @@ public class MessengerController implements Initializable {
         MenuButton kebabMenuBtn = new MenuButton();
         MenuItem privateMsgItem = new MenuItem("Private message");
         privateMsgItem.setId(registeredUser.getEmail());
-        privateMsgItem.setOnAction(addUserEmailToField);
-        kebabMenuBtn.getItems().add(privateMsgItem);
-        kebabMenuBtn.setGraphic(menuIconView);
-        kebabMenuBtn.setPrefSize(15, 15);
-        kebabMenuBtn.getStyleClass().add("kebab-menu");
+        privateMsgItem.setOnAction(onPrivateMsgSend);
+        MenuItem privateImageMsgItem = new MenuItem("Private image");
+        privateImageMsgItem.setId(registeredUser.getEmail());
+        privateImageMsgItem.setOnAction(onPrivateImageMsgSend);
         
         HBox userDataHBox = new HBox(userNameLbl, userEmailLbl);
         userDataHBox.setSpacing(15);
         userDataHBox.setPrefWidth(240);
         userDataHBox.setAlignment(Pos.CENTER_LEFT);
+        
+        kebabMenuBtn.getItems().addAll(privateMsgItem, privateImageMsgItem);
+        kebabMenuBtn.setGraphic(menuIconView);
+        kebabMenuBtn.setPrefSize(15, 15);
+        kebabMenuBtn.getStyleClass().add("kebab-menu");
+        kebabMenuBtn.disableProperty().bind(
+          Bindings.size(userDataHBox.getChildren()).isNotEqualTo(3)
+        );
         
         for (User onlineUser : onlineUsersList) {
           if (registeredUser.getId() == onlineUser.getId()) {
@@ -154,15 +201,22 @@ public class MessengerController implements Initializable {
     });
   }
   
+  /**
+   * Sets button for image chooser.
+   */
   private void setImageChooserBtn() {
     Image imageIcon = new Image(getClass().getResource("/images/image-icon.png").toString());
     ImageView imageIconView = new ImageView(imageIcon);
     imageIconView.setFitHeight(35);
     imageIconView.setFitWidth(35);
     this.chooseImageBtn.setGraphic(imageIconView);
-    this.chooseImageBtn.setOnAction(ev -> openImageChooser());
+    this.chooseImageBtn.setOnAction(onImageMsgSend);
   }
   
+  /**
+   * Adds notification to chat that user has connected to chat.
+   * @param msg 
+   */
   public void addNotificationToChat(Message msg) {
     Platform.runLater(() -> {
       String notificationText = msg.getText();
@@ -175,17 +229,15 @@ public class MessengerController implements Initializable {
     });
   }
   
+  /**
+   * Adds public image to chat.
+   * @param msg message object of type {@link messages.Message}.
+   */
   public void addImageToChat(Message msg) {
     Platform.runLater(() -> {
       String msgSenderName = msg.getSender().toString();
-      File msgImage = msg.getImage();
-      Image image = null;
-      try {
-        image = new Image(msgImage.toURI().toURL().toString());
-      } catch (MalformedURLException ex) {
-        System.err.println("Cant parse image message");
-        ex.printStackTrace();
-      }
+      InputStream imageIS = new ByteArrayInputStream(msg.getImageBytes());
+      Image image = new Image(imageIS);
       ImageView imageView = new ImageView(image);
       
       String msgDateTime = msg.getDateTime().format(DateTimeFormatter.ofPattern("HH:mm"));
@@ -197,10 +249,8 @@ public class MessengerController implements Initializable {
       hMsgBox.prefWidthProperty().bind(this.chatBox.widthProperty());
       VBox messageBox = new VBox(msgSenderLbl, imageView, msgTimeLbl);
       messageBox.getStyleClass().add("public-msg-box");
-      messageBox.setMinWidth(100);
-      messageBox.setMinHeight(100);
-      messageBox.setMaxWidth(500);
-      messageBox.setMaxHeight(500);
+      messageBox.setMinSize(100, 50);
+      messageBox.setMaxSize(450, 300);
       msgTimeLbl.prefWidthProperty().bind(messageBox.widthProperty());
       imageView.fitWidthProperty().bind(messageBox.widthProperty().subtract(10));
       imageView.fitHeightProperty().bind(messageBox.heightProperty().subtract(40));
@@ -212,6 +262,44 @@ public class MessengerController implements Initializable {
     });
   }
   
+  /**
+   * Adds private image to chat.
+   * @param msg message object of type {@link messages.Message}.
+   */
+  public void addPrivateImageToChat(Message msg) {
+    Platform.runLater(() -> {
+      String msgSenderName = msg.getSender().toString();
+      InputStream imageIS = new ByteArrayInputStream(msg.getImageBytes());
+      Image image = new Image(imageIS);
+      ImageView imageView = new ImageView(image);
+      
+      String msgDateTime = msg.getDateTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+      Label msgSenderLbl = new Label("Private image from " + msgSenderName);
+      Label msgTimeLbl = new Label(msgDateTime);
+      msgSenderLbl.getStyleClass().add("msg-sender");
+      msgTimeLbl.getStyleClass().add("msg-time");
+      HBox hMsgBox = new HBox();
+      hMsgBox.prefWidthProperty().bind(this.chatBox.widthProperty());
+      VBox messageBox = new VBox(msgSenderLbl, imageView, msgTimeLbl);
+      messageBox.getStyleClass().add("private-msg-box");
+      messageBox.setMinSize(100, 50);
+      messageBox.setMaxSize(450, 300);
+      msgTimeLbl.prefWidthProperty().bind(messageBox.widthProperty());
+      imageView.fitWidthProperty().bind(messageBox.widthProperty().subtract(10));
+      imageView.fitHeightProperty().bind(messageBox.heightProperty().subtract(40));
+      hMsgBox.getChildren().add(messageBox);
+      if (msg.getSender().getId() == userData.getId()) {
+        hMsgBox.setAlignment(Pos.CENTER_RIGHT);
+        msgSenderLbl.setText("Private message to " + msg.getReceiver());
+      }
+      this.chatBox.getChildren().add(hMsgBox);
+    });
+  }
+  
+  /**
+   * Adds public text message to chat.
+   * @param msg message object of type {@link messages.Message}.
+   */
   public void addMessageToChat(Message msg) {
     Platform.runLater(() -> {
       String msgSenderName = msg.getSender().toString();
@@ -239,8 +327,11 @@ public class MessengerController implements Initializable {
     });
   }
   
+  /**
+   * Adds private text message to chat.
+   * @param msg message object of type {@link messages.Message}.
+   */
   public void addPrivateMessageToChat(Message msg) {
-    System.out.println("Add private msg to chat");
     Platform.runLater(() -> {
       String msgSenderName = msg.getSender().toString();
       String msgText = Coder.decrypt(msg.getText());
@@ -268,6 +359,10 @@ public class MessengerController implements Initializable {
     });
   }
   
+  /**
+   * Handles message given from {@link #messageField} after pressing Enter key.
+   * @param fieldText string text of field.
+   */
   private void handleMessage(String fieldText) {
     if (fieldText.matches(EMPTY_PRIVATE_MSG_REG_EX)) {
       Alert emptyPrivateMsgAlert = new Alert(Alert.AlertType.WARNING);

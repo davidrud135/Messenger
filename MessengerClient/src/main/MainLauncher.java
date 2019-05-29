@@ -8,8 +8,16 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
+/**
+ * Main program class launcher.
+ * @author David Rudenko.
+ */
 public class MainLauncher extends Application {
 
+  /**
+   * Start method.
+   * @param primaryStage primary stage.
+   */
   @Override
   public void start(Stage primaryStage) {
     try {
@@ -27,6 +35,10 @@ public class MainLauncher extends Application {
     }
   }
 
+  /**
+   * Launches program.
+   * @param args 
+   */
   public static void main(String[] args) {
     launch(args);
   }

@@ -15,6 +15,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * Main class which communicates with clients and DB.
+ * @author David Rudenko
+ */
 public class Server {
   
   private static final int PORT = 12345;
@@ -22,6 +26,11 @@ public class Server {
   private static ArrayList<User> allUsersList;
   public static ArrayList<User> onlineUsersList;
 
+  /**
+   * Launches listener for clients and connects to DB.
+   * @param args input arguments
+   * @throws IOException if can't get initialize ServerSocket.
+   */
   public static void main(String[] args) throws IOException {
     ServerSocket listener = new ServerSocket(PORT);
     System.out.println(
@@ -44,6 +53,9 @@ public class Server {
     }
   }
   
+  /**
+   * Class for handling user data and in/out streams.
+   */
   private static class UserHandler extends Thread {
     private Socket socket;
     private User user;
@@ -51,11 +63,19 @@ public class Server {
     private OutputStream outStream;
     private ObjectOutputStream objOutStream;
     private InputStream inStream;
-
+    
+    /**
+     * Creates new instance of this class.
+     * @param userSocket - socket of new user.
+     * @throws IOException if can't get socket or its streams.
+     */
     public UserHandler(Socket userSocket) throws IOException {
       this.socket = userSocket;
     }
 
+    /**
+     * Listens for client's input data and handles it.
+     */
     public void run() {
       System.out.println("Attempting to connect a user...");
       try {
@@ -86,6 +106,10 @@ public class Server {
       }
     }
 
+    /**
+     * Handles user's auth data and sends respond.
+     * @param userAuthData 
+     */
     private void handleUserAuthDataObj(UserAuthData userAuthData) {
       try {
        if (userAuthData.getAuthType() == AuthType.SIGN_UP) {
@@ -118,6 +142,10 @@ public class Server {
       }
     }
     
+    /**
+     * Handles messages from users.
+     * @param msg users message object of type {@link messages.Message}.
+     */
     private void handleMessageObj(Message msg) {
       try {
         System.out.println(
@@ -138,34 +166,44 @@ public class Server {
           case USER_PRIVATE_TEXT:
             writePrivateMessageToUser(msg);
             break;
+          case USER_PRIVATE_IMAGE:
+            writePrivateMessageToUser(msg);
+            break;
         }
       } catch (IOException ex) {
         ex.printStackTrace();
       }
     }
     
-    private Message removeFromChat() throws IOException {
+    /**
+     * Once user left the chat, server removes user from online users lists.
+     * Then sends message to clients with updated online users list.
+     * @throws IOException if can't send message to client.
+     */
+    private void removeFromChat() throws IOException {
       Message msg = new Message();
       msg.setText(user.toString() + " has left the chat.");
       msg.setType(MessageType.DISCONNECTED);
       msg.setDateTime(LocalDateTime.now());
       writeMessageToChat(msg);
-      return msg;
     }
 
-    /*
-     * For displaying that a user has joined the server
+    /**
+     * Once user has joined the chat, user added to online users list.
+     * Then sends message to clients with updated online users list.
+     * @throws IOException if can't send message to client.
      */
-    private Message addUserToChat() throws IOException {
+    private void addUserToChat() throws IOException {
       Message msg = new Message();
       msg.setText(user.toString() + " has joined the chat.");
       msg.setType(MessageType.CONNECTED);
       writeMessageToChat(msg);
-      return msg;
     }
 
-    /*
-     * Creates and sends a Message to the private user.
+    /**
+     * Writes private message to given user.
+     * @param msg message object of type {@link messages.Message}.
+     * @throws IOException if can't send private message.
      */
     private void writePrivateMessageToUser(Message msg) throws IOException {
       int receiverId = msg.getReceiver().getId();
@@ -187,8 +225,9 @@ public class Server {
       senderObjectOutputStream.flush();
     }
     
-    /*
-     * Creates and sends a Message to the listeners.
+    /**
+     * Writes message to all online users.
+     * @param msg message object of type {@link messages.Message}.
      */
     private void writeMessageToChat(Message msg) {
       try {
@@ -205,7 +244,7 @@ public class Server {
     }
 
     /*
-     * Once a user has been disconnected, we close the open connections and remove the writers
+     * Once a user has been disconnected, we close the open connections and remove him from online users list.
      */
     private synchronized void closeConnections()  {
       System.out.println("closeConnections() method Enter");
@@ -243,6 +282,11 @@ public class Server {
     }
   }
   
+  /**
+   * Searches for user duplicate in online users list.
+   * @param userId - user's unique id, int.
+   * @return true if there is duplicate user with given id, otherwise false.
+   */
   public static boolean hasOnlineDuplicate(int userId) {
     for (User onlineUser : onlineUsersList) {
       if (userId == onlineUser.getId()) {

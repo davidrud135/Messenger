@@ -9,6 +9,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.ResourceBundle;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -31,8 +32,7 @@ import messenger.MessengerController;
 import shared.Communicator;
 
 /**
- * FXML Controller class
- *
+ * Class controller for auth window functionality.
  * @author David Rudenko
  */
 public class AuthController implements Initializable {
@@ -42,49 +42,23 @@ public class AuthController implements Initializable {
   
   private static Communicator communicator;
   
+  private String validEmailRegEx = "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$";
+  private String invalidBorderStyle = "-fx-text-box-border: #B22222;";
+  private String validBorderStyle = "-fx-text-box-border: #3CB371;";
+  
+  /**
+   * Initializes main auth window functionality.
+   * @param url url link.
+   * @param rb resource bundle.
+   */
   @Override
   public void initialize(URL url, ResourceBundle rb) {
     communicator = new Communicator();
     this.accordion.setExpandedPane(signInPane);
-    this.signUpBtn.disableProperty().bind(
-      Bindings.isEmpty(signUpNameField.textProperty())
-        .or(Bindings.isEmpty(signUpEmailField.textProperty()))
-        .or(Bindings.isEmpty(signUpPasswordField.textProperty()))
-        .or(Bindings.isEmpty(signUpRePasswordField.textProperty()))
-    );
-    this.signInBtn.disableProperty().bind(
-      Bindings.isEmpty(signInEmailField.textProperty())
-        .or(Bindings.isEmpty(signInPasswordField.textProperty()))
-    );
-    
-    signUpEmailField.focusedProperty().addListener(new ChangeListener<Boolean>() {
-      @Override
-      public void changed(
-        ObservableValue<? extends Boolean> arg0, 
-        Boolean oldPropertyValue, Boolean newPropertyValue
-      ) {
-        System.out.println(newPropertyValue);
-      }
-    });
-//    this.signUpEmailField.textProperty().addListener((observable, oldValue, newValue) -> {
-//      System.out.println("sign up textfield changed from " + oldValue + " to " + newValue);
-//      boolean isEmailValid = newValue.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
-//      if (!isEmailValid) {
-//        signUpEmailField.setStyle("-fx-border-color: red;");
-//      } else {
-//        signUpEmailField.setStyle(null);
-//      }
-////      if (!isEmailValid) {
-////        signUpEmailField.getStyleClass().add("invalid-email");
-////      } else {
-////        signUpEmailField.getStyleClass().clear();
-////        signUpEmailField.getStyleClass().addAll("text-field", "text-input");
-////      }
-//      System.out.println(signUpEmailField.getStyleClass());
-//      System.out.println(
-//        String.format("Email %s is %s", newValue, isEmailValid)
-//      );
-//    });
+    this.setSignUpFieldsValidation();
+    this.setSignInFieldsValidation();
+    addTextLimiter(signUpNameField, 25);
+    addTextLimiter(signUpNameField, 25);
   } 
   
   ///////////////  Sign Up Section  ///////////////
@@ -99,6 +73,67 @@ public class AuthController implements Initializable {
   @FXML
   private Button signUpBtn;
   
+  private BooleanBinding signUpNameFieldValidator;
+  private BooleanBinding signUpEmailFieldValidator;
+  private BooleanBinding signUpPasswordFieldValidator;
+  private BooleanBinding signUpRePasswordFieldValidator;
+  
+  private ChangeListener<Boolean> signUpNameFieldFocusListener = new ChangeListener<Boolean>() {
+    @Override
+    public void changed(ObservableValue<? extends Boolean> arg0, Boolean notFocused, Boolean focused) {
+      if (notFocused) {
+        if (signUpNameFieldValidator.get()) {
+          signUpNameField.setStyle(invalidBorderStyle);
+        } else {
+          signUpNameField.setStyle(validBorderStyle);
+        }
+      }
+    }
+  };
+  
+  private ChangeListener<Boolean> signUpEmailFieldFocusListener = new ChangeListener<Boolean>() {
+    @Override
+    public void changed(ObservableValue<? extends Boolean> arg0, Boolean notFocused, Boolean focused) {
+      if (notFocused) {
+        if (signUpEmailFieldValidator.get()) {
+          signUpEmailField.setStyle(invalidBorderStyle);
+        } else {
+          signUpEmailField.setStyle(validBorderStyle);
+        }
+      }
+    }
+  };
+  
+  private ChangeListener<Boolean> signUpPasswordFieldFocusListener = new ChangeListener<Boolean>() {
+    @Override
+    public void changed(ObservableValue<? extends Boolean> arg0, Boolean notFocused, Boolean focused) {
+      if (notFocused) {
+        if (signUpPasswordFieldValidator.get()) {
+          signUpPasswordField.setStyle(invalidBorderStyle);
+        } else {
+          signUpPasswordField.setStyle(validBorderStyle);
+        }
+      }
+    }
+  };
+  
+  private ChangeListener<Boolean> signUpRePasswordFieldFocusListener = new ChangeListener<Boolean>() {
+    @Override
+    public void changed(ObservableValue<? extends Boolean> arg0, Boolean notFocused, Boolean focused) {
+      if (notFocused) {
+        if (signUpRePasswordFieldValidator.get()) {
+          signUpRePasswordField.setStyle(invalidBorderStyle);
+        } else {
+          signUpRePasswordField.setStyle(validBorderStyle);
+        }
+      }
+    }
+  };
+  
+  /**
+   * Sends user auth data of type SIGN_UP to server and gets respond.
+   * @param ev key event.
+   */
   @FXML
   private void onSignUp(ActionEvent ev) {
     String name = signUpNameField.getText().trim();
@@ -136,6 +171,33 @@ public class AuthController implements Initializable {
     }
   }
   
+  /**
+   * Sets validation for sign up section fields.
+   */
+  private void setSignUpFieldsValidation() {
+    signUpNameFieldValidator = Bindings.isEmpty(signUpNameField.textProperty());
+    signUpEmailFieldValidator = Bindings.createBooleanBinding(() ->
+      !signUpEmailField.getText().matches(validEmailRegEx),
+      signUpEmailField.textProperty()
+    );
+    signUpPasswordFieldValidator = Bindings.isEmpty(signUpPasswordField.textProperty());
+    signUpRePasswordFieldValidator = Bindings.isEmpty(signUpRePasswordField.textProperty());
+    
+    signUpNameField.focusedProperty().addListener(signUpNameFieldFocusListener);
+    signUpEmailField.focusedProperty().addListener(signUpEmailFieldFocusListener);
+    signUpPasswordField.focusedProperty().addListener(signUpPasswordFieldFocusListener);
+    signUpRePasswordField.focusedProperty().addListener(signUpRePasswordFieldFocusListener);
+    this.signUpBtn.disableProperty().bind(
+      signUpNameFieldValidator
+      .or(signUpEmailFieldValidator)
+      .or(signUpPasswordFieldValidator)
+      .or(signUpRePasswordFieldValidator)
+    );
+  }
+  
+  /**
+   * Clears sign up fields.
+   */
   private void clearSignUpForm() {
     this.signUpNameField.clear();
     this.signUpEmailField.clear();
@@ -154,6 +216,39 @@ public class AuthController implements Initializable {
   @FXML
   public Button signInBtn;
   
+  private BooleanBinding signInEmailFieldValidator;
+  private BooleanBinding signInPasswordFieldValidator;
+  
+  private ChangeListener<Boolean> signInEmailFieldFocusListener = new ChangeListener<Boolean>() {
+    @Override
+    public void changed(ObservableValue<? extends Boolean> arg0, Boolean notFocused, Boolean focused) {
+      if (notFocused) {
+        if (signInEmailFieldValidator.get()) {
+          signInEmailField.setStyle(invalidBorderStyle);
+        } else {
+          signInEmailField.setStyle(validBorderStyle);
+        }
+      }
+    }
+  };
+  
+  private ChangeListener<Boolean> signInPasswordFieldFocusListener = new ChangeListener<Boolean>() {
+    @Override
+    public void changed(ObservableValue<? extends Boolean> arg0, Boolean notFocused, Boolean focused) {
+      if (notFocused) {
+        if (signInPasswordFieldValidator.get()) {
+          signInPasswordField.setStyle(invalidBorderStyle);
+        } else {
+          signInPasswordField.setStyle(validBorderStyle);
+        }
+      }
+    }
+  };
+  
+  /**
+   * Sends user auth data of type SIGN_IN to server and gets respond.
+   * @param ev key event.
+   */
   @FXML
   public void onSignIn(ActionEvent ev) {
     String email = signInEmailField.getText().trim();
@@ -191,6 +286,30 @@ public class AuthController implements Initializable {
     }
   }
   
+  /**
+   * Sets validation for sign in section fields.
+   */
+  private void setSignInFieldsValidation() {
+    signInEmailFieldValidator = Bindings.createBooleanBinding(() ->
+      !signInEmailField.getText().matches(validEmailRegEx),
+      signInEmailField.textProperty()
+    );
+    signInPasswordFieldValidator = Bindings.isEmpty(signInPasswordField.textProperty());
+    
+    signInEmailField.focusedProperty().addListener(signInEmailFieldFocusListener);
+    signInPasswordField.focusedProperty().addListener(signInPasswordFieldFocusListener);
+    this.signInBtn.disableProperty().bind(
+      signInEmailFieldValidator
+      .or(signInPasswordFieldValidator)
+    );
+  }
+  
+  /////////////// General methods ///////////////
+  
+  /**
+   * Launches {@link shared.Communicator} class for sendind messages after successful sign in.
+   * Than redirects to messaging window.
+   */
   private void redirectToMessengerWindow() {
     try {
       Stage authStage = (Stage) this.signInBtn.getScene().getWindow();
@@ -215,6 +334,28 @@ public class AuthController implements Initializable {
     }
   }
   
+  /**
+   * Adds string length limiter to given TextField.
+   * @param tf TextField to apply length limit.
+   * @param maxLength integer, TextField string length limit.
+   */
+  public void addTextLimiter(final TextField tf, final int maxLength) {
+    tf.textProperty().addListener(new ChangeListener<String>() {
+      @Override
+      public void changed(final ObservableValue<? extends String> ov, final String oldValue, final String newValue) {
+        if (tf.getText().length() > maxLength) {
+          String s = tf.getText().substring(0, maxLength);
+          tf.setText(s);
+        }
+      }
+    });
+  }
+  
+  /**
+   * Hashes string with SHA-256 algorithm.
+   * @param str string to hash.
+   * @return hashed string.
+   */
   private String hashStringWithSHA256(String str) {
     String encodedStr = "";
     try {

@@ -9,28 +9,64 @@ import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 import messages.User;
 import server.Server;
 
 /**
- *
+ * Class for communication with MySQL DB.
  * @author David Rudenko
  */
 public class DBCommunicator {
   
   private static Connection conn = null;
 
+  /**
+   * Creates new instance of this class.
+   * Creates connection with DB.
+   */
   public DBCommunicator() {
     try {
-//      conn = DBConnector.connectToLocalDB();
       conn = DBConnector.connectToRemoteDB();
       System.out.println("Server has connected to Database.");
     } catch (SQLException ex) {
       System.err.println("Server cant connect to Database.");
       ex.printStackTrace();
     }
+    launchConnectionRefresher();
   }
   
+  /**
+   * Refreshes MySQL connection every 5 hours.
+   */
+  private static void launchConnectionRefresher() {
+    long taskInterval = 1000 * 60 * 60 * 5;
+    Timer timer = new Timer ();
+    TimerTask task = new TimerTask () {
+      @Override
+      public void run () {
+        try {
+          System.out.println("Refreshing DB connection..");
+          String query = "SELECT 1";
+          Statement st = conn.createStatement();
+          st.executeQuery(query);
+        } catch (SQLException ex) {
+          System.err.println("Can't refresh DB connection.");
+          ex.printStackTrace();
+        }
+      }
+    };
+    timer.schedule(task, taskInterval, taskInterval);
+  }
+  
+  /**
+   * Adds new user to DB.
+   * @param name - user name, String.
+   * @param email - user email, String.
+   * @param password - user password, String.
+   * @return this operation respond of type {@link auth.AuthRespond}.
+   */
   public static AuthRespond signUpUser(String name, String email, String password) {
     System.out.println(
       String.format("User with email '%s' is trying to Sign Up.", email)
@@ -55,6 +91,12 @@ public class DBCommunicator {
     return authRespond;
   }
   
+  /**
+   * Checks signed in user auth data.
+   * @param email - user email, String.
+   * @param password - user password, String.
+   * @return this operation respond of type {@link auth.AuthRespond}.
+   */
   public static AuthRespond signInUser(String email, String password) {
     System.out.println(
       String.format("User with email '%s' is trying to Sign In.", email)
@@ -89,6 +131,10 @@ public class DBCommunicator {
     return authRespond;
   }
   
+  /**
+   * Gets list of signed up users data from DB.
+   * @return ArrayList of users ({@link messages.User}).
+   */
   public static ArrayList<User> getDBUsersList() {
     final String usersQuery = "SELECT id, name, email FROM users;";
     ArrayList<User> usersList = new ArrayList<>();
