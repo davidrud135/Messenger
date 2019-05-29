@@ -1,10 +1,13 @@
 package messages;
 
-import java.io.File;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
+/**
+ * Class for data communication between client and server.
+ * @author David Rudenko
+ */
 public class Message implements Serializable {
 
   private User sender;
@@ -14,45 +17,45 @@ public class Message implements Serializable {
   private LocalDateTime sentDateTime;
   private ArrayList<User> allUsersList;
   private ArrayList<User> onlineUsersList;
-  private File image;
+  private byte[] imageBytes;
 
   /**
-   * @return the sender
+   * @return the message sender of type {@link messages.User}.
    */
   public User getSender() {
     return sender;
   }
 
   /**
-   * @param sender the sender to set
+   * @param sender the message sender, {@link messages.User}.
    */
   public void setSender(User sender) {
     this.sender = sender;
   }
 
   /**
-   * @return the type
+   * @return the message type, {@link messages.MessageType}.
    */
   public MessageType getType() {
     return type;
   }
 
   /**
-   * @param type the type to set
+   * @param type the message type, {@link messages.MessageType}.
    */
   public void setType(MessageType type) {
     this.type = type;
   }
 
   /**
-   * @return the text
+   * @return the message text, String.
    */
   public String getText() {
     return text;
   }
 
   /**
-   * @param text the text to set
+   * @param text the message text of type String.
    */
   public void setText(String text) {
     this.text = text;
@@ -87,20 +90,6 @@ public class Message implements Serializable {
   }
 
   /**
-   * @return the image
-   */
-  public File getImage() {
-    return image;
-  }
-
-  /**
-   * @param image the image to set
-   */
-  public void setImage(File image) {
-    this.image = image;
-  }
-
-  /**
    * @return the receiver
    */
   public User getReceiver() {
@@ -126,6 +115,20 @@ public class Message implements Serializable {
    */
   public void setAllUsersList(ArrayList<User> allUsersList) {
     this.allUsersList = allUsersList;
+  }
+
+  /**
+   * @return the image bytes.
+   */
+  public byte[] getImageBytes() {
+    return imageBytes;
+  }
+
+  /**
+   * @param imageBytes sets image bytes.
+   */
+  public void setImageBytes(byte[] imageBytes) {
+    this.imageBytes = imageBytes;
   }
 
 }

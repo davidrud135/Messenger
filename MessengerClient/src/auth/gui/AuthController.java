@@ -32,8 +32,7 @@ import messenger.MessengerController;
 import shared.Communicator;
 
 /**
- * FXML Controller class
- *
+ * Class controller for auth window functionality.
  * @author David Rudenko
  */
 public class AuthController implements Initializable {
@@ -47,12 +46,19 @@ public class AuthController implements Initializable {
   private String invalidBorderStyle = "-fx-text-box-border: #B22222;";
   private String validBorderStyle = "-fx-text-box-border: #3CB371;";
   
+  /**
+   * Initializes main auth window functionality.
+   * @param url url link.
+   * @param rb resource bundle.
+   */
   @Override
   public void initialize(URL url, ResourceBundle rb) {
     communicator = new Communicator();
     this.accordion.setExpandedPane(signInPane);
     this.setSignUpFieldsValidation();
     this.setSignInFieldsValidation();
+    addTextLimiter(signUpNameField, 25);
+    addTextLimiter(signUpNameField, 25);
   } 
   
   ///////////////  Sign Up Section  ///////////////
@@ -124,6 +130,10 @@ public class AuthController implements Initializable {
     }
   };
   
+  /**
+   * Sends user auth data of type SIGN_UP to server and gets respond.
+   * @param ev key event.
+   */
   @FXML
   private void onSignUp(ActionEvent ev) {
     String name = signUpNameField.getText().trim();
@@ -161,6 +171,9 @@ public class AuthController implements Initializable {
     }
   }
   
+  /**
+   * Sets validation for sign up section fields.
+   */
   private void setSignUpFieldsValidation() {
     signUpNameFieldValidator = Bindings.isEmpty(signUpNameField.textProperty());
     signUpEmailFieldValidator = Bindings.createBooleanBinding(() ->
@@ -182,6 +195,9 @@ public class AuthController implements Initializable {
     );
   }
   
+  /**
+   * Clears sign up fields.
+   */
   private void clearSignUpForm() {
     this.signUpNameField.clear();
     this.signUpEmailField.clear();
@@ -229,6 +245,10 @@ public class AuthController implements Initializable {
     }
   };
   
+  /**
+   * Sends user auth data of type SIGN_IN to server and gets respond.
+   * @param ev key event.
+   */
   @FXML
   public void onSignIn(ActionEvent ev) {
     String email = signInEmailField.getText().trim();
@@ -266,6 +286,9 @@ public class AuthController implements Initializable {
     }
   }
   
+  /**
+   * Sets validation for sign in section fields.
+   */
   private void setSignInFieldsValidation() {
     signInEmailFieldValidator = Bindings.createBooleanBinding(() ->
       !signInEmailField.getText().matches(validEmailRegEx),
@@ -283,6 +306,10 @@ public class AuthController implements Initializable {
   
   /////////////// General methods ///////////////
   
+  /**
+   * Launches {@link shared.Communicator} class for sendind messages after successful sign in.
+   * Than redirects to messaging window.
+   */
   private void redirectToMessengerWindow() {
     try {
       Stage authStage = (Stage) this.signInBtn.getScene().getWindow();
@@ -307,6 +334,28 @@ public class AuthController implements Initializable {
     }
   }
   
+  /**
+   * Adds string length limiter to given TextField.
+   * @param tf TextField to apply length limit.
+   * @param maxLength integer, TextField string length limit.
+   */
+  public void addTextLimiter(final TextField tf, final int maxLength) {
+    tf.textProperty().addListener(new ChangeListener<String>() {
+      @Override
+      public void changed(final ObservableValue<? extends String> ov, final String oldValue, final String newValue) {
+        if (tf.getText().length() > maxLength) {
+          String s = tf.getText().substring(0, maxLength);
+          tf.setText(s);
+        }
+      }
+    });
+  }
+  
+  /**
+   * Hashes string with SHA-256 algorithm.
+   * @param str string to hash.
+   * @return hashed string.
+   */
   private String hashStringWithSHA256(String str) {
     String encodedStr = "";
     try {

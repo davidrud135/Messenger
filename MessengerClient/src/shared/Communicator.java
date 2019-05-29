@@ -8,16 +8,16 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import javafx.scene.control.Alert;
 import messages.Message;
 import messages.MessageType;
 import messages.User;
-import messenger.Coder;
 import messenger.MessengerController;
 
 /**
- *
+ * Class for communication with server.
  * @author David Rudenko
  */
 public class Communicator implements Runnable {
@@ -30,10 +30,12 @@ public class Communicator implements Runnable {
   private static User userData;
   private static MessengerController messengerController;
   
+  /**
+   * Trying to connect to server.
+   */
   public Communicator() {
     try {
-//      socket = new Socket(REMOTE_SERVER_HOST, SERVER_PORT);
-      socket = new Socket(LOCAL_SERVER_HOST, SERVER_PORT);
+      socket = new Socket(REMOTE_SERVER_HOST, SERVER_PORT);
       objOutStream = new ObjectOutputStream(socket.getOutputStream());
       objInStream = new ObjectInputStream(socket.getInputStream());
     } catch (IOException ex) {
@@ -49,6 +51,9 @@ public class Communicator implements Runnable {
     );
   }
   
+  /**
+   * Listens to server and handles messages.
+   */
   @Override
   public void run() {
     try {
@@ -64,6 +69,13 @@ public class Communicator implements Runnable {
     }
   }
   
+  /**
+   * Sends query to server to sign up user.
+   * @param name user name, string.
+   * @param email user email, string.
+   * @param password user password, string.
+   * @return server respond object of type {@link auth.AuthRespond}.
+   */
   public static AuthRespond signUpUser(String name, String email, String password) {
     AuthRespond resp = null;
     try {
@@ -77,6 +89,12 @@ public class Communicator implements Runnable {
     return resp;
   }
   
+  /**
+   * Sends query to server to sign in user.
+   * @param name user name, string.
+   * @param email user email, string.
+   * @return server respond object of type {@link auth.AuthRespond}.
+   */
   public static AuthRespond signInUser(String email, String password) {
     AuthRespond resp = null;
     try {
@@ -90,6 +108,10 @@ public class Communicator implements Runnable {
     return resp;
   }
   
+  /**
+   * Handles server message.
+   * @param msg message object of type {@link messages.Message}.
+   */
   private void handleMessageObj(Message msg) {
     String senderName = (msg.getSender() == null) ? "Server": msg.getSender().toString();
     System.out.println(
@@ -123,14 +145,27 @@ public class Communicator implements Runnable {
     }
   }
   
+  /**
+   * Sets new user data for {@link shared.Communicator} class.
+   * @param userData 
+   */
   public void setUserData(User userData) {
     Communicator.userData = userData;
   }
   
+  /**
+   * Sets MessengerController for {@link shared.Communicator} class.
+   * @param messengerController 
+   */
   public void setMessengerController(MessengerController messengerController) {
     Communicator.messengerController = messengerController;
   }
   
+  /**
+   * Sends private text message to server.
+   * @param fieldText messenger field text of type string.
+   * @param receiver message receiver of type {@link messages.User}.
+   */
   public static void sendPrivateTextMsg(String fieldText, User receiver) {
     String msgText = fieldText.substring(fieldText.indexOf(" ") + 1);
     try {
@@ -147,6 +182,11 @@ public class Communicator implements Runnable {
     }
   }
   
+  /**
+   * Sends private image message to server.
+   * @param imageFile image file of type File.
+   * @param receiver message receiver of type {@link messages.User}.
+   */
   public static void sendPrivateImageMsg(File imageFile, User receiver) {
     try {
       Message msg = new Message();
@@ -154,7 +194,7 @@ public class Communicator implements Runnable {
       msg.setReceiver(receiver);
       msg.setType(MessageType.USER_PRIVATE_IMAGE);
       msg.setDateTime(LocalDateTime.now());
-      msg.setImage(imageFile);
+      msg.setImageBytes(Files.readAllBytes(imageFile.toPath()));
       objOutStream.writeObject(msg);
       objOutStream.flush();
     } catch (IOException ex) {
@@ -162,8 +202,9 @@ public class Communicator implements Runnable {
     }
   }
   
-  /* This method is used for sending text Message
-   * @param msg - The message text
+  /**
+   * Sends public text message to server.
+   * @param msgText message text.
    */
   public static void sendTextMsg(String msgText) {
     try {
@@ -179,22 +220,22 @@ public class Communicator implements Runnable {
     }
   }
   
-  /* This method is used for sending image Message
-   * @param msg - The message image
+  /**
+   * Sends public image message to server.
+   * @param imageFile image file of type File.
    */
-  public static void sendImageMsg(File msgImage) {
+  public static void sendImageMsg(File imageFile) {
     try {
       Message msg = new Message();
       msg.setSender(userData);
       msg.setType(MessageType.USER_PUBLIC_IMAGE);
       msg.setDateTime(LocalDateTime.now());
-      msg.setImage(msgImage);
+      msg.setImageBytes(Files.readAllBytes(imageFile.toPath()));
       objOutStream.writeObject(msg);
       objOutStream.flush();
     } catch (IOException ex) {
       System.err.println("Cant send msg to server");
     }
   }
-  
   
 }
